@@ -23,6 +23,7 @@ A retro, terminal-style personal website and portfolio built with vanilla JavaSc
 
   * **Retro Terminal UI:** A fully interactive command-line interface that serves as the primary navigation.
   * **Draggable Window Manager:** Applications launch in draggable, minimizable, and closable windows, managed by a custom JavaScript window manager.
+  * **Custom Audio Player:** A fully functional music player with a custom UI, playlist, and a real-time audio visualizer.
   * **Modular JavaScript Architecture:** The entire frontend logic is broken down into clean, maintainable ES6 modules (`import`/`export`).
   * **Full CRUD Notes App:** A self-contained notes application that can create, read, update, and delete notes by communicating with a backend API.
   * **Python/Flask Backend:** A simple but effective API server built with Flask that handles the logic for the notes app.
