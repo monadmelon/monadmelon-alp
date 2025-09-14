@@ -5,7 +5,6 @@ lib/     - code tricks, how-tos, useful notes
 log/     - tech diary, dated posts, updates
 phil/    - philosophy, thoughts, meditations
 aud/     - music, sound, audio explorations
-app/     - applications, tools
 usr/     - about suika (the black cat)
 var/     - rants, random thoughts
 net/     - external connections & links
