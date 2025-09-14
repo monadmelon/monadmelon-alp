@@ -98,7 +98,7 @@
         function launchAudPlayer() {
             terminal.style.display = 'none';
             appWindow.style.display = 'flex';
-            appContent.src = 'audplayer.html';
+            appContent.src = './audplayer.html'; // Path updated for deployment
             appContent.focus();
         }
         function closeAudPlayer() {
@@ -161,7 +161,7 @@
                 const currentDir = getCurrentDirectory();
                 if (filename.endsWith('/')) return `cat: ${filename}: Is a directory`;
                 if (!directoryStructure[currentDir]?.includes(filename)) return `cat: ${filename}: no such file`;
-                let path = 'content/';
+                let path = './content/'; // Path updated for deployment
                 if (currentDir !== '~') path += currentDir;
                 path += filename;
                 try {
@@ -187,7 +187,7 @@
         async function initializeFileSystem() {
             const fsMountMessage = document.getElementById('filesystem-mount-message');
             try {
-                const response = await fetch('content/filesystem.json');
+                const response = await fetch('./content/filesystem.json'); // Path updated for deployment
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 directoryStructure = await response.json();
                 fsMountMessage.innerHTML += '[OK]';
