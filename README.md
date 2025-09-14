@@ -1,3 +1,4 @@
+```
 > INITIATING MONADMELON BOOT SEQUENCE...
 > LOADING PROJECT METADATA.................... [OK]
 > RENDERING README.MD......................... [OK]
@@ -8,14 +9,13 @@
 ╚════██║██║   ██║██║██╔═██╗ ██╔══██║
 ███████║╚██████╔╝██║██║  ██╗██║  ██║
 ╚══════╝ ╚═════╝ ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝
+```
 
-## `README.md`
-
-# monadmelon-alp: A Retro Terminal Website
+## `monadmelon-alp: A Retro Terminal Website`
 
 **Live Demo:** [https://monadmelon.github.io/monadmelon-alp/](https://monadmelon.github.io/monadmelon-alp/)
 
-A retro, terminal-style personal website and portfolio built with vanilla JavaScript and a Python/Flask backend. This project simulates a simple desktop operating system in the browser, complete with a command-line interface, draggable application windows, and a responsive mobile-friendly design.
+A retro, terminal-style personal website and portfolio built with vanilla JavaScript and a Python/Flask backend...
 
 -----
 
