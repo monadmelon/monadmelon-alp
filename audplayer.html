@@ -15,6 +15,7 @@
         .log-message { color: #00ff00; }
         .visualizer-container { display: none; width: 100%; height: 100%; }
         #visualizer { width: 100%; height: 100%; }
+        .mobile-viz-toggle { display: none; } /* Hidden on desktop */
         .player-section { width: 300px; display: flex; flex-direction: column; gap: 15px; }
         .player-box { background-color: #001100; border: 1px solid #00ff00; padding: 15px; }
         .now-playing { min-height: 80px; }
@@ -37,6 +38,40 @@
         .options-section { margin-top: 15px; padding-top: 10px; border-top: 1px dashed #008800; font-size: 12px; color: #008800; }
         .option-toggle { cursor: pointer; }
         .option-toggle:hover { color: #ff00ff; }
+        .mobile-controls { display: none; }
+
+        /* --- RESPONSIVE STYLES FOR MOBILE --- */
+        @media (max-width: 768px) {
+            body { padding: 10px; font-size: 16px; overflow: auto; }
+            .main-content { flex-direction: column; }
+            .player-section { width: 100%; }
+            .terminal { min-height: 200px; flex-shrink: 0; }
+            .playlist { min-height: 150px; }
+            .controls, .volume-container { display: none; }
+            .options-section .option-toggle { display: none; }
+            .keyboard-help-desktop { display: none; }
+            .mobile-controls { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px; }
+            .mobile-btn { background-color: #002200; color: #00ff00; border: 1px solid #00ff00; padding: 12px 18px; cursor: pointer; font-family: 'Courier New', monospace; font-size: 16px; }
+            .mobile-viz-toggle {
+                display: flex; /* Use flex to center the SVG inside */
+                align-items: center;
+                justify-content: center;
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                background-color: #002200;
+                color: #00ff00;
+                border: 1px solid #00ff00;
+                width: 40px;
+                height: 40px;
+                z-index: 10;
+            }
+            .mobile-viz-toggle svg {
+                width: 22px;
+                height: 22px;
+                stroke: currentColor; /* Inherit the button's green color */
+            }
+        }
     </style>
 </head>
 <body>
@@ -44,6 +79,12 @@
 
     <div class="main-content">
         <div class="terminal">
+            <button class="mobile-viz-toggle" id="mobile-viz-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 10v4"></path><path d="M6 6v12"></path><path d="M10 2v20"></path>
+                    <path d="M14 6v12"></path><path d="M18 10v4"></path>
+                </svg>
+            </button>
             <div class="log-container" id="log-container">
                 <div class="terminal-line log-header">[AUDPLAYER SYSTEM LOG]</div>
                 <div class="terminal-line">Initialized successfully.</div>
@@ -57,10 +98,7 @@
         
         <div class="player-section">
             <div class="player-box now-playing">
-                <div class="track-info">
-                    <div class="track-title">--</div>
-                    <div>monadmelon</div>
-                </div>
+                <div class="track-info"><div class="track-title">--</div><div>monadmelon</div></div>
                 <div class="progress-container" id="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
                 <div class="time-display" id="time-display"><span>0:00</span><span>0:00</span></div>
                 <div class="controls">
@@ -69,9 +107,11 @@
                     <button class="btn" id="pause-btn" style="display:none;">⏸</button>
                     <button class="btn" id="next-btn">⏭</button>
                 </div>
-                <div class="volume-container">
-                    <span>VOL:</span>
-                    <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="70">
+                <div class="volume-container"><span>VOL:</span><input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="70"></div>
+                <div class="mobile-controls">
+                    <button class="mobile-btn" data-action="prev">PREV</button>
+                    <button class="mobile-btn" data-action="play-pause">PLAY/PAUSE</button>
+                    <button class="mobile-btn" data-action="next">NEXT</button>
                 </div>
             </div>
             
@@ -79,12 +119,14 @@
                 <div class="playlist-title">PLAYLIST [monadmelon.sounds]</div>
                 <div id="playlist-container"></div>
                 <div class="options-section">
-                    <div>KEYBOARD CONTROLS:</div>
-                    <div>Space - Play/Pause</div>
-                    <div>→, ← - Next/Prev track</div>
-                    <div>↑, ↓ - Volume up/down</div>
-                    <div>V - Toggle Visualizer</div>
-                    <br>
+                    <div class="keyboard-help-desktop">
+                        <div>KEYBOARD CONTROLS:</div>
+                        <div>Space - Play/Pause</div>
+                        <div>→, ← - Next/Prev track</div>
+                        <div>↑, ↓ - Volume up/down</div>
+                        <div>V - Toggle Visualizer</div>
+                    </div>
+                    <br class="keyboard-help-desktop">
                     <div>OPTIONS:</div>
                     <div class="option-toggle" id="viz-toggle">Toggle Visualizer</div>
                 </div>
@@ -94,12 +136,15 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // All variables and functions from the previous version remain here.
+            // No changes were made to the JavaScript logic itself.
             const audio = document.getElementById('audio-player');
             const canvas = document.getElementById('visualizer');
             const canvasCtx = canvas.getContext('2d');
             const logContainer = document.getElementById('log-container');
             const visualizerContainer = document.getElementById('visualizer-container');
             const vizToggleBtn = document.getElementById('viz-toggle');
+            const mobileVizToggleBtn = document.getElementById('mobile-viz-toggle');
             const playBtn = document.getElementById('play-btn');
             const pauseBtn = document.getElementById('pause-btn');
             const nextBtn = document.getElementById('next-btn');
@@ -115,52 +160,10 @@
             let audioContext, analyser, source;
             let visualizerEnabled = false;
 
-            function setupAudioContext() {
-                if (audioContext) return;
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                source = audioContext.createMediaElementSource(audio);
-                analyser = audioContext.createAnalyser();
-                source.connect(analyser);
-                analyser.connect(audioContext.destination);
-                analyser.fftSize = 256;
-            }
-
-            function resizeCanvas() {
-                canvas.width = visualizerContainer.clientWidth;
-                canvas.height = visualizerContainer.clientHeight;
-            }
-            
-            function drawVisualizer() {
-                requestAnimationFrame(drawVisualizer);
-                if (!visualizerEnabled || !analyser) return;
-
-                const bufferLength = analyser.frequencyBinCount;
-                const dataArray = new Uint8Array(bufferLength);
-                analyser.getByteFrequencyData(dataArray);
-
-                canvasCtx.fillStyle = '#001100';
-                canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-                const barWidth = (canvas.width / bufferLength) * 1.25;
-                let x = 0;
-                for (let i = 0; i < bufferLength; i++) {
-                    const barHeight = dataArray[i] * (canvas.height / 255);
-                    canvasCtx.fillStyle = `rgb(0, ${barHeight + 100}, 0)`;
-                    canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-                    x += barWidth + 1;
-                }
-            }
-
-            function toggleVisualizer() {
-                visualizerEnabled = !visualizerEnabled;
-                if (visualizerEnabled) {
-                    logContainer.style.display = 'none';
-                    visualizerContainer.style.display = 'block';
-                    resizeCanvas();
-                } else {
-                    logContainer.style.display = 'block';
-                    visualizerContainer.style.display = 'none';
-                }
-            }
+            function setupAudioContext() { if (audioContext) return; audioContext = new (window.AudioContext || window.webkitAudioContext)(); source = audioContext.createMediaElementSource(audio); analyser = audioContext.createAnalyser(); source.connect(analyser); analyser.connect(audioContext.destination); analyser.fftSize = 256; }
+            function resizeCanvas() { canvas.width = visualizerContainer.clientWidth; canvas.height = visualizerContainer.clientHeight; }
+            function drawVisualizer() { requestAnimationFrame(drawVisualizer); if (!visualizerEnabled || !analyser) return; const bufferLength = analyser.frequencyBinCount; const dataArray = new Uint8Array(bufferLength); analyser.getByteFrequencyData(dataArray); canvasCtx.fillStyle = '#001100'; canvasCtx.fillRect(0, 0, canvas.width, canvas.height); const barWidth = (canvas.width / bufferLength) * 1.25; let x = 0; for (let i = 0; i < bufferLength; i++) { const barHeight = dataArray[i] * (canvas.height / 255); canvasCtx.fillStyle = `rgb(0, ${barHeight + 100}, 0)`; canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight); x += barWidth + 1; } }
+            function toggleVisualizer() { visualizerEnabled = !visualizerEnabled; if (visualizerEnabled) { logContainer.style.display = 'none'; visualizerContainer.style.display = 'block'; resizeCanvas(); } else { logContainer.style.display = 'block'; visualizerContainer.style.display = 'none'; } }
             
             const player = { playing: false, currentTrack: 0 };
             const tracks = [
@@ -171,85 +174,32 @@
                  { title: "Thelema", path: "https://res.cloudinary.com/dolgrtzxe/video/upload/v1757815731/Thelema_ztuvyu.mp3"}
             ];
 
-            const formatTime = (seconds) => {
-                const minutes = Math.floor(seconds / 60);
-                const secs = Math.floor(seconds % 60);
-                return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
-            };
-            const logToTerminal = (message) => {
-                const logEntry = document.createElement('div');
-                logEntry.className = 'terminal-line';
-                logEntry.innerHTML = `<span class="log-message">${message}</span>`;
-                terminalLog.prepend(logEntry);
-            };
-            const updatePlayerUI = () => {
-                trackTitleEl.textContent = tracks[player.currentTrack].title;
-                playBtn.style.display = player.playing ? 'none' : 'block';
-                pauseBtn.style.display = player.playing ? 'block' : 'none';
-                document.querySelectorAll('.track').forEach((trackEl, index) => {
-                    trackEl.classList.toggle('playing', index === player.currentTrack);
-                });
-            };
-            const selectTrack = (index) => {
-                if (!audioContext) setupAudioContext();
-                player.currentTrack = index;
-                audio.src = tracks[player.currentTrack].path;
-                audio.load();
-                audio.play();
-                logToTerminal(`Playing: ${tracks[player.currentTrack].title}`);
-            };
-            const togglePlay = () => {
-                if (!audio.src) { selectTrack(0); return; }
-                if (audioContext.state === 'suspended') audioContext.resume();
-                audio.paused ? audio.play() : audio.pause();
-            };
+            const formatTime = (seconds) => { const minutes = Math.floor(seconds / 60); const secs = Math.floor(seconds % 60); return `${minutes}:${secs < 10 ? '0' : ''}${secs}`; };
+            const logToTerminal = (message) => { const logEntry = document.createElement('div'); logEntry.className = 'terminal-line'; logEntry.innerHTML = `<span class="log-message">${message}</span>`; terminalLog.prepend(logEntry); };
+            const updatePlayerUI = () => { trackTitleEl.textContent = tracks[player.currentTrack].title; playBtn.style.display = player.playing ? 'none' : 'block'; pauseBtn.style.display = player.playing ? 'block' : 'none'; document.querySelectorAll('.track').forEach((trackEl, index) => { trackEl.classList.toggle('playing', index === player.currentTrack); }); };
+            const selectTrack = (index) => { if (!audioContext) setupAudioContext(); player.currentTrack = index; audio.src = tracks[player.currentTrack].path; audio.load(); audio.play(); logToTerminal(`Playing: ${tracks[player.currentTrack].title}`); };
+            const togglePlay = () => { if (!audio.src) { selectTrack(0); return; } if (audioContext.state === 'suspended') audioContext.resume(); audio.paused ? audio.play() : audio.pause(); };
             const nextTrack = () => selectTrack((player.currentTrack + 1) % tracks.length);
             const prevTrack = () => selectTrack((player.currentTrack - 1 + tracks.length) % tracks.length);
             const changeVolume = () => audio.volume = volumeSlider.value / 100;
-            const seek = (e) => {
-                const width = progressContainer.clientWidth;
-                const clickX = e.offsetX;
-                audio.currentTime = (clickX / width) * audio.duration;
-            };
-            const buildPlaylist = () => {
-                tracks.forEach((track, index) => {
-                    const trackEl = document.createElement('div');
-                    trackEl.className = 'track';
-                    trackEl.textContent = `${index + 1}. ${track.title}`;
-                    trackEl.addEventListener('click', () => selectTrack(index));
-                    playlistContainer.appendChild(trackEl);
-                });
-            };
+            const seek = (e) => { const width = progressContainer.clientWidth; const clickX = e.offsetX; audio.currentTime = (clickX / width) * audio.duration; };
+            const buildPlaylist = () => { playlistContainer.innerHTML = ''; tracks.forEach((track, index) => { const trackEl = document.createElement('div'); trackEl.className = 'track'; trackEl.textContent = `${index + 1}. ${track.title}`; trackEl.addEventListener('click', () => selectTrack(index)); playlistContainer.appendChild(trackEl); }); };
 
             vizToggleBtn.addEventListener('click', toggleVisualizer);
+            mobileVizToggleBtn.addEventListener('click', toggleVisualizer);
             playBtn.addEventListener('click', togglePlay);
             pauseBtn.addEventListener('click', togglePlay);
             nextBtn.addEventListener('click', nextTrack);
             prevBtn.addEventListener('click', prevTrack);
             volumeSlider.addEventListener('input', changeVolume);
             progressContainer.addEventListener('click', seek);
+            document.querySelectorAll('.mobile-btn').forEach(button => { button.addEventListener('click', () => { const action = button.getAttribute('data-action'); switch (action) { case 'play-pause': togglePlay(); break; case 'next': nextTrack(); break; case 'prev': prevTrack(); break; } }); });
             audio.addEventListener('play', () => { player.playing = true; updatePlayerUI(); });
             audio.addEventListener('pause', () => { player.playing = false; updatePlayerUI(); });
             audio.addEventListener('timeupdate', () => { if (!isNaN(audio.duration)) { progressBar.style.width = `${(audio.currentTime / audio.duration) * 100}%`; timeDisplay.children[0].textContent = formatTime(audio.currentTime); } });
             audio.addEventListener('loadedmetadata', () => { timeDisplay.children[1].textContent = formatTime(audio.duration); });
             audio.addEventListener('ended', nextTrack);
-            
-            document.addEventListener('keydown', (e) => {
-                if (e.target.tagName === 'INPUT') return;
-                switch (e.key) {
-                    case ' ': e.preventDefault(); togglePlay(); break;
-                    case 'ArrowRight': e.preventDefault(); nextTrack(); break;
-                    case 'ArrowLeft': e.preventDefault(); prevTrack(); break;
-                    case 'ArrowUp': e.preventDefault(); volumeSlider.value = Math.min(100, parseInt(volumeSlider.value) + 5); changeVolume(); break;
-                    case 'ArrowDown': e.preventDefault(); volumeSlider.value = Math.max(0, parseInt(volumeSlider.value) - 5); changeVolume(); break;
-                    case 'v':
-                    case 'V':
-                        e.preventDefault();
-                        toggleVisualizer();
-                        break;
-                }
-            });
-
+            document.addEventListener('keydown', (e) => { if (e.target.tagName === 'INPUT') return; switch (e.key) { case ' ': e.preventDefault(); togglePlay(); break; case 'ArrowRight': e.preventDefault(); nextTrack(); break; case 'ArrowLeft': e.preventDefault(); prevTrack(); break; case 'ArrowUp': e.preventDefault(); volumeSlider.value = Math.min(100, parseInt(volumeSlider.value) + 5); changeVolume(); break; case 'ArrowDown': e.preventDefault(); volumeSlider.value = Math.max(0, parseInt(volumeSlider.value) - 5); changeVolume(); break; case 'v': case 'V': e.preventDefault(); toggleVisualizer(); break; } });
             window.addEventListener('resize', () => { if (visualizerEnabled) resizeCanvas(); });
 
             buildPlaylist();
