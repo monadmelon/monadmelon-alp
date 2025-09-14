@@ -10,20 +10,22 @@ export function ls() {
     // Case 2: We are in a subdirectory
     const topLevelDir = `${currentPath[0]}/`;
     const allEntries = directoryStructure[topLevelDir] || [];
-    
-    // e.g., if currentPath is ['log', 'C'], this becomes 'C/'
     const prefix = currentPath.slice(1).join('/') + (currentPath.length > 1 ? '/' : '');
-    
+
     const displaySet = new Set();
+
     for (const entry of allEntries) {
+        // Find entries that are direct children of the current path
         if (entry.startsWith(prefix) && entry !== prefix) {
-            const relative = entry.substring(prefix.length);
-            const parts = relative.split('/');
+            const relativePath = entry.substring(prefix.length);
             
-            // Add the first part of the relative path. If it's a directory, add a slash.
-            if (parts[0]) {
-                const item = parts.length > 1 && parts[1] !== '' ? `${parts[0]}/` : parts[0];
-                displaySet.add(item);
+            if (relativePath) {
+                const parts = relativePath.split('/');
+                const firstPart = parts[0];
+                
+                // A simple, reliable check: if the relative path contains a '/', it represents a directory.
+                const isDir = relativePath.includes('/');
+                displaySet.add(isDir ? `${firstPart}/` : firstPart);
             }
         }
     }
