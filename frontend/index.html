@@ -43,6 +43,13 @@
             .app-window { width: 100%; height: 100%; top: 0; left: 0; transform: none !important; border: none; }
             .app-title-bar { cursor: default; }
 
+            /* **UPDATED:** Making BOTH title bar buttons visible and larger for mobile */
+            .title-bar-btn {
+                width: 30px;
+                height: 30px;
+                line-height: 28px;
+            }
+
             #mobile-buttons { display: flex; position: fixed; bottom: 0; left: 0; width: 100%; background-color: #001100; border-top: 1px solid #00ff00; padding: 4px; justify-content: space-around; z-index: 4000; }
             #mobile-buttons button { background: transparent; border: 1px solid #00ff00; color: #00ff00; font-family: 'Courier New', monospace; font-size: 14px; padding: 5px 8px; margin: 2px; flex-grow: 1; text-align: center; }
         }
