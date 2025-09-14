@@ -7,17 +7,15 @@ export function cd(args) {
         return;
     }
     
-    const target = args[0].replace(/\/$/, ''); // remove trailing slash if present
+    const target = args[0].replace(/\/$/, '');
 
     if (target === '..') {
-        if (currentPath.length > 0) {
-            currentPath.pop();
-            updateCurrentPath(currentPath);
-        }
+        if (currentPath.length > 0) currentPath.pop();
+        updateCurrentPath(currentPath);
         return;
     }
 
-    // Handle cd into a top-level directory from root
+    // Case 1: changing from the root directory
     if (currentPath.length === 0) {
         if (directoryStructure[`${target}/`]) {
             updateCurrentPath([target]);
@@ -27,16 +25,15 @@ export function cd(args) {
         return;
     }
 
-    // Handle cd into a subdirectory
+    // Case 2: changing from a subdirectory
     const topLevelDir = `${currentPath[0]}/`;
     const allEntries = directoryStructure[topLevelDir] || [];
     const newPathPrefix = [...currentPath.slice(1), target].join('/') + '/';
-
-    const isValidDir = allEntries.some(entry => entry === newPathPrefix || entry.startsWith(newPathPrefix));
+    
+    const isValidDir = allEntries.some(entry => entry.startsWith(newPathPrefix));
 
     if (isValidDir) {
-        const newPath = [...currentPath, target];
-        updateCurrentPath(newPath);
+        updateCurrentPath([...currentPath, target]);
     } else {
         return `cd: ${target}: No such directory`;
     }
