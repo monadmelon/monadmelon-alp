@@ -1,11 +1,16 @@
 {
-    "~": ["README.txt", "sys/", "lib/", "log/", "phil/", "aud/", "usr/", "var/", "net/"],
-    "sys/": ["manifesto.txt"],
-    "lib/": [],
-    "log/": [],
-    "phil/": ["thoughts.txt"],
+    "~": ["README.txt", "projects/", "log/", "usr/", "aud/", "net/"],
+    "projects/": [
+        "manifesto.txt"
+    ],
+    "log/": [
+        
+    ],
+    "usr/": [
+        "thoughts.txt",
+        "suika.txt",
+        "rants.txt"
+    ],
     "aud/": ["playlists.txt", "audplayer"],
-    "usr/": ["suika.txt"],
-    "var/": ["rants.txt"],
     "net/": ["links.txt"]
 }

@@ -1,13 +1,10 @@
 ## DIRECTORY STRUCTURE
 
-sys/     - technology, systems, code
-lib/     - code tricks, how-tos, useful notes
-log/     - tech diary, dated posts, updates
-phil/    - philosophy, thoughts, meditations
-aud/     - music, sound, audio explorations
-usr/     - about suika (the black cat)
-var/     - rants, random thoughts
-net/     - external connections & links
+projects/ - technology, systems, code
+log/      - tech diary, dated posts, updates
+usr/      - personal files, philosophy, and thoughts
+aud/      - music, sound, audio explorations
+net/      - external connections & links
 
 ## APPLICATIONS
 
