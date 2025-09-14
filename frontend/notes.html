@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes App</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+        body { 
+            background-color: #0a0a0a; 
+            color: #00ff00; 
+            font-family: 'Courier New', monospace; 
+            font-size: 14px; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        #notes-app-content { display: flex; flex-grow: 1; overflow: hidden; }
+        #notes-sidebar { width: 200px; border-right: 1px solid #00ff00; padding: 10px; overflow-y: auto; background-color: #001100; display: flex; flex-direction: column; }
+        #notes-list { flex-grow: 1; }
+        #notes-list .note-item { padding: 5px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #notes-list .note-item:hover, #notes-list .note-item.selected { background-color: #003300; }
+        #note-editor-area { flex-grow: 1; display: flex; }
+        #note-editor { flex-grow: 1; background-color: #0a0a0a; border: none; color: #00ff00; font-family: 'Courier New', monospace; font-size: 14px; resize: none; outline: none; padding: 10px; }
+        
+        .sidebar-actions { border-top: 1px dashed #008800; padding-top: 10px; margin-top: 10px; }
+        .btn { width: 100%; background-color: #002200; color: #00ff00; border: 1px solid #00ff00; padding: 8px; cursor: pointer; font-family: 'Courier New', monospace; margin-bottom: 5px; }
+        .btn:hover { background-color: #00ff00; color: #001100; }
+        .btn.delete { border-color: #ff0000; color: #ff0000; }
+        .btn.delete:hover { background-color: #ff0000; color: #001100; }
+
+        @media (max-width: 768px) {
+            #notes-app-content { flex-direction: column; }
+            #notes-sidebar { width: 100%; height: 200px; border-right: none; border-bottom: 1px solid #00ff00; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="notes-app-content">
+        <div id="notes-sidebar">
+            <div id="notes-list"></div>
+            <div class="sidebar-actions">
+                <button id="new-note-btn" class="btn">[ New Note ]</button>
+                <button id="save-note-btn" class="btn">[ Save Note ]</button>
+                <button id="delete-note-btn" class="btn delete">[ Delete Note ]</button>
+            </div>
+        </div>
+        <div id="note-editor-area">
+            <textarea id="note-editor" placeholder="Click 'New Note' to start..."></textarea>
+        </div>
+    </div>
+
+    <script>
+        const notesListContainer = document.getElementById('notes-list');
+        const noteEditor = document.getElementById('note-editor');
+        const newNoteBtn = document.getElementById('new-note-btn');
+        const saveNoteBtn = document.getElementById('save-note-btn');
+        const deleteNoteBtn = document.getElementById('delete-note-btn');
+        
+        let currentNote = null;
+
+        async function fetchNotes() {
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/notes');
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                const notes = await response.json();
+                
+                notesListContainer.innerHTML = '';
+                
+                notes.forEach(note => {
+                    const noteElement = document.createElement('div');
+                    noteElement.className = 'note-item';
+                    noteElement.textContent = `> ${note.title}`;
+                    noteElement.dataset.noteId = note.id;
+                    
+                    noteElement.addEventListener('click', () => loadNoteIntoEditor(note, noteElement));
+                    notesListContainer.appendChild(noteElement);
+                });
+            } catch (error) {
+                notesListContainer.innerHTML = '<div style="color: #ff0000;">Error: Could not fetch notes.</div>';
+            }
+        }
+
+        function loadNoteIntoEditor(note, element) {
+            currentNote = note;
+            noteEditor.value = `# ${note.title}\n\n${note.content}`;
+            
+            document.querySelectorAll('.note-item').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        function prepareNewNote() {
+            currentNote = null;
+            noteEditor.value = '# New Note Title\n\n';
+            document.querySelectorAll('.note-item').forEach(el => el.classList.remove('selected'));
+            noteEditor.focus();
+        }
+
+        async function saveNote() {
+            const content = noteEditor.value;
+            const title = content.split('\n')[0].replace('# ', '').trim();
+            const noteBody = content.substring(content.indexOf('\n\n') + 2);
+            
+            let response;
+            if (currentNote) {
+                // UPDATE existing note with PUT request
+                response = await fetch(`http://127.0.0.1:5000/api/notes/${currentNote.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title: title, content: noteBody }),
+                });
+            } else {
+                // CREATE new note with POST request
+                response = await fetch('http://127.0.0.1:5000/api/notes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title: title, content: noteBody }),
+                });
+            }
+
+            if (response.ok) {
+                await fetchNotes(); // Refresh the list
+                prepareNewNote();
+            } else {
+                alert('Failed to save note.');
+            }
+        }
+
+        async function deleteNote() {
+            if (!currentNote) {
+                alert("Please select a note to delete.");
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete "${currentNote.title}"?`)) {
+                const response = await fetch(`http://127.0.0.1:5000/api/notes/${currentNote.id}`, {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    await fetchNotes(); // Refresh the list
+                    prepareNewNote(); // Clear the editor
+                } else {
+                    alert("Failed to delete the note.");
+                }
+            }
+        }
+
+        // --- Event Listeners ---
+        newNoteBtn.addEventListener('click', prepareNewNote);
+        saveNoteBtn.addEventListener('click', saveNote);
+        deleteNoteBtn.addEventListener('click', deleteNote);
+        document.addEventListener('DOMContentLoaded', fetchNotes);
+    </script>
+</body>
+</html>
