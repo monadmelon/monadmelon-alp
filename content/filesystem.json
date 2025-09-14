@@ -4,7 +4,7 @@
     "lib/": [],
     "log/": [],
     "phil/": ["thoughts.txt"],
-    "aud/": ["soundscape.txt", "audplayer"],
+    "aud/": ["playlists.txt", "audplayer"],
     "usr/": ["suika.txt"],
     "var/": ["rants.txt"],
     "net/": ["links.txt"]
