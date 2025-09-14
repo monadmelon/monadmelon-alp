@@ -168,5 +168,3 @@ This is a simple Flask server that provides a RESTful API for the notes app.
   * It uses an in-memory list to store notes (no database is configured yet).
   * It provides `GET`, `POST`, `PUT`, and `DELETE` endpoints at `/api/notes` to handle all CRUD (Create, Read, Update, Delete) operations.
   * It uses `Flask-CORS` to allow the frontend to make requests to it.
-
-It's just past midnight on Monday morning here in India. This documentation should give any new developer a complete and thorough understanding of the project.
