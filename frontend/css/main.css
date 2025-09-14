@@ -1,0 +1,47 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body { background-color: #0a0a0a; color: #00ff00; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1; padding: 4px; overflow: hidden; }
+#terminal { height: 100%; overflow-y: auto; white-space: pre-wrap; display: none; }
+#scroll-anchor { height: 1px; }
+.input-line { display: flex; align-items: center; margin-bottom: 2px; }
+.prompt { color: #ff00ff; margin-right: 6px; white-space: nowrap; }
+.command { color: #00ff00; font-weight: bold; }
+.output { margin-bottom: 2px; line-height: 1.2; font-family: 'Courier New', monospace; white-space: pre-wrap; word-break: break-all; }
+#input { background: transparent; border: none; color: #00ff00; font-family: 'Courier New', monospace; font-size: 14px; outline: none; width: 100%; padding: 0; margin: 0; }
+.protected { user-select: none; opacity: 0.9; }
+#boot-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #0a0a0a; z-index: 1000; padding: 20px; overflow: hidden; }
+.boot-message { margin-bottom: 1px; opacity: 0; animation: typeIn 0.3s forwards; white-space: nowrap; }
+@keyframes typeIn { to { opacity: 1; } }
+.ascii-art-line { margin-bottom: 0; opacity: 0; animation: typeIn 0.2s forwards; white-space: pre; font-family: 'Courier New', monospace; }
+.scanlines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0, 255, 0, 0.03) 1px, transparent 1px); background-size: 100% 3px; pointer-events: none; animation: scanline 10s linear infinite; }
+@keyframes scanline { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
+
+.app-window { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 1024px; height: 85vh; background-color: #0a0a0a; border: 1px solid #00ff00; z-index: 2000; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); flex-direction: column; }
+.app-title-bar { background-color: #001100; border-bottom: 1px solid #00ff00; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; cursor: move; color: #ff00ff; user-select: none; }
+.title-bar-buttons { display: flex; gap: 5px; }
+.title-bar-btn { border: 1px solid; cursor: pointer; width: 20px; height: 20px; text-align: center; line-height: 18px; font-family: monospace; font-weight: bold; }
+.minimize-btn { background-color: #ffff00; border-color: #ffff55; color: #001100; }
+.close-btn { background-color: #ff0000; border-color: #ff5555; color: #001100; }
+
+.app-content-iframe { flex-grow: 1; border: none; }
+
+#taskbar { display: flex; gap: 5px; position: fixed; bottom: 0; left: 0; width: 100%; background-color: #001100; border-top: 1px solid #00ff00; z-index: 3000; padding: 0 5px; }
+.taskbar-item { display: none; padding: 8px 15px; cursor: pointer; color: #00ff00; transition: background-color 0.2s; border: 1px solid #005500; margin: 3px 0; }
+.taskbar-item:hover { background-color: #003300; }
+
+#mobile-buttons { display: none; visibility: hidden; opacity: 0; transition: opacity 0.5s ease-in, bottom 0.3s ease-out; }
+
+@media (max-width: 768px) {
+    body { padding-bottom: 45px; }
+    .app-window { width: 100%; height: 100%; top: 0; left: 0; transform: none !important; border: none; }
+    .app-title-bar { cursor: default; }
+
+    .title-bar-btn {
+        width: 30px;
+        height: 30px;
+        line-height: 28px;
+    }
+
+    #mobile-buttons { display: flex; position: fixed; bottom: 0; left: 0; width: 100%; background-color: #001100; border-top: 1px solid #00ff00; padding: 4px; justify-content: space-around; z-index: 4000; }
+    #mobile-buttons button { background: transparent; border: 1px solid #00ff00; color: #00ff00; font-family: 'Courier New', monospace; font-size: 14px; padding: 5px 8px; margin: 2px; flex-grow: 1; text-align: center; }
+}

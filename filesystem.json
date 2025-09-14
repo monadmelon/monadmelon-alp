@@ -1,0 +1,28 @@
+{
+    "aud/": [
+        "playlists.txt"
+    ],
+    "log/": [
+        "C/",
+        "C/c_info.txt"
+    ],
+    "net/": [
+        "links.txt"
+    ],
+    "projects/": [
+        "manifesto.txt"
+    ],
+    "usr/": [
+        "rants.txt",
+        "suika.txt",
+        "thoughts.txt"
+    ],
+    "~": [
+        "README.md",
+        "aud/",
+        "log/",
+        "net/",
+        "projects/",
+        "usr/"
+    ]
+}

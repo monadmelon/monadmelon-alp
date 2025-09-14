@@ -1,0 +1,38 @@
+# Objects in "C"
+
+In C, Objects are entities that occupy memory and store data. The main types of objects are:
+
+1. Variables (Locations in memory) – store a single value of a specific datatype in memory which can also be modified during program
+                                     execution.
+
+                                     Examples: `int x;`, `float y;`
+
+2. Arrays (continugious block of memory that contains multiple variables that are the same type) – store multiple values of the same 
+                                                                                                   datatype in contiguous memory.
+                                                                                                   (STRINGS are just an array of characters btw)
+
+                                                                                                    Example: `int arr[10];`
+                                                                                                             'char str[] = "Hello";'
+
+
+3. Pointers  – store memory addresses of other objects.
+
+    Example: `int *ptr;`
+
+4. Structures (`struct`) – group different types of variables under one name.
+
+    Example: `struct Point { int x; int y; };`
+
+5. Unions (`union`) – similar to structs but share the same memory for all members.
+
+    Example: `union Data { int i; float f; char c; };`
+
+6. Enumerations (`enum`)** – named integer constants.
+
+    Example: `enum Color { RED, GREEN, BLUE };`
+
+7. Typedef-defined objects** – custom names for existing types.
+
+    Example: `typedef unsigned int uint;`
+
+

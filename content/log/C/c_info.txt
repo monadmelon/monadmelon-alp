@@ -1,0 +1,25 @@
+# What is C?
+
+C is a low-level programming language (which used to be high-level back in the days) that is used for systems programming. it gives you complete control(unlike other languages)
+
+So what's the catch?
+
+well the very fact that it gives you complete over your development environment is a double-edged sword. since, it can both make you and also kill you at the time. C doesn't baby feed the user on how the code should be written - this is good for some but bad for many since it can cause a lot of issues in long run if the developer doesn't understand C does what it does.
+it can cause memory leaks and buggy code and even critical vulnerabilites, not because C is a bad language but because the developer doesn't know what it is working with. 
+
+Personally C is my first programming language so i might be biased here but learning it actually makes other newer languages much more easier. But, C also teaches you how things work at the low level so we have an idea on how our codes actually runs on the machine.
+
+
+
+Why Choose C Over Other Languages?
+
+Apart from the board definition or understanding that i gave about C, let's look into a bit technical side on why "C" is different.
+
+C is a compiled language. which means C has a compiler that converts the human readable code into code that the processor(machine) is able to understand. 
+Where as many of the modern day languages like python are interepreted, this interepreter is written in a compiled language reads and executes the code in a sandbox. This comes with a performance hit, but generally makes the code safer and easier to trust.
+
+Another thing is "C" does not have a garbage collector. Usually newer languages automatically clears up empty/unused memory spaces which makes the code more efficient and safer but C relys on the user to do so. This is good in a way where C is way faster than otherlanguages since it doesn't have an overhead algorithm running on top of it to check for memory leaks but it is also cumbersome for programmers to do this manually so - it is what it is.
+
+C also lets you mix types and override type rules, so the compiler doesn’t always enforce strict type correctness. That’s why it’s considered weakly typed compared to languages like Java, which strictly enforce types.
+
+Another reason is - "C" is kinda the grandad of all modern languages in a way and C is almost everywhere you can think off. Sure, there are other languages like rust coming up but C is still everywhere.
