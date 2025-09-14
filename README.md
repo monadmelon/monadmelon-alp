@@ -21,12 +21,12 @@ A retro terminal-style personal website and portfolio. This project features a c
 To run this project locally, you need to start both the frontend and the backend servers in separate terminals.
 
 ### `> 1. Start the Frontend`
-- [cite_start]**All frontend files are in the project's root directory.** [cite: 1]
+- **All frontend files are in the project's root directory.** 
 - Simply open the `index.html` file in your browser.
 - Using a tool like VS Code's "Live Server" is recommended for the best experience.
 
 ### `> 2. Start the Backend`
-1. [cite_start]In a separate terminal, navigate to the `backend/` directory. [cite: 1]
+1. In a separate terminal, navigate to the `backend/` directory. 
 2. Activate the virtual environment:
    - **Windows:** `venv\Scripts\activate`
    - **macOS/Linux:** `source venv/bin/activate`
