@@ -12,6 +12,7 @@ import { date } from '../commands/date.js';
 import { echo } from '../commands/echo.js';
 import { audplayer } from '../commands/audplayer.js';
 import { notes } from '../commands/notes.js';
+import { suika } from '../commands/suika.js'; // Import the new suika command
 
 // Export the complete commands object that terminal.js will use
 export const commands = {
@@ -26,4 +27,5 @@ export const commands = {
     echo,
     audplayer,
     notes,
+    suika,
 };

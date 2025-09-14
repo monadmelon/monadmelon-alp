@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://127.0.0.1:5000;">
+
     <title>monadmelon@web:~$</title>
     <link rel="stylesheet" href="./frontend/css/main.css">
 </head>
@@ -20,9 +23,13 @@
         <div class="ascii-art-line" style="animation-delay: 4.9s">╚════██║██║   ██║██║██╔═██╗ ██╔══██║</div>
         <div class="ascii-art-line" style="animation-delay: 5.2s">███████║╚██████╔╝██║██║  ██╗██║  ██║</div>
         <div class="ascii-art-line" style="animation-delay: 5.5s">╚══════╝ ╚═════╝ ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝</div>
-        <div class="boot-message" style="animation-delay: 6.0s">[OK]</div>
-        <div class="boot-message" style="animation-delay: 6.5s">> SYSTEM READY</div>
-        <div class="boot-message" style="animation-delay: 7.0s">> WELCOME TO MONADMELON</div>
+        
+        <div class="ascii-art-line" style="animation-delay: 6.0s; color: #ff00ff;">  /\_/\  </div>
+        <div class="ascii-art-line" style="animation-delay: 6.2s; color: #ff00ff;"> ( o.o ) </div>
+        <div class="ascii-art-line" style="animation-delay: 6.4s; color: #ff00ff;">  > ^ <  </div>
+
+        <div class="boot-message" style="animation-delay: 7.0s">> SYSTEM READY</div>
+        <div class="boot-message" style="animation-delay: 7.5s">> WELCOME TO MONADMELON</div>
     </div>
 
     <div id="terminal">
@@ -41,8 +48,8 @@
         <div class="app-title-bar">
             <span>~/aud/audplayer</span>
             <div class="title-bar-buttons">
-                <button class="title-bar-btn minimize-btn" onclick="minimizeAudPlayer()">-</button>
-                <button class="title-bar-btn close-btn" onclick="closeAudPlayer()">X</button>
+                <button class="title-bar-btn minimize-btn">-</button>
+                <button class="title-bar-btn close-btn">X</button>
             </div>
         </div>
         <iframe id="audplayer-content" class="app-content-iframe" tabindex="-1"></iframe>
@@ -52,23 +59,23 @@
         <div class="app-title-bar">
             <span>~/app/notes</span>
             <div class="title-bar-buttons">
-                <button class="title-bar-btn minimize-btn" onclick="minimizeNotesApp()">-</button>
-                <button class="title-bar-btn close-btn" onclick="closeNotesApp()">X</button>
+                <button class="title-bar-btn minimize-btn">-</button>
+                <button class="title-bar-btn close-btn">X</button>
             </div>
         </div>
         <iframe id="notes-app-content" class="app-content-iframe" tabindex="-1"></iframe>
     </div>
 
     <div id="taskbar">
-        <div id="audplayer-taskbar-item" class="taskbar-item" onclick="restoreAudPlayer()">[♫ audplayer]</div>
-        <div id="notes-app-taskbar-item" class="taskbar-item" onclick="restoreNotesApp()">[📝 notes]</div>
+        <div id="audplayer-taskbar-item" class="taskbar-item">[♫ audplayer]</div>
+        <div id="notes-app-taskbar-item" class="taskbar-item">[📝 notes]</div>
     </div>
 
     <div id="mobile-buttons">
-        <button onclick="window.insertCommand('help', true)">help</button>
-        <button onclick="window.insert-command('audplayer', true)">audplayer</button>
-        <button onclick="window.insert-command('notes', true)">notes</button>
-        <button onclick="window.insert-command('clear', true)">clear</button>
+        <button data-command="help">help</button>
+        <button data-command="audplayer">audplayer</button>
+        <button data-command="notes">notes</button>
+        <button data-command="clear">clear</button>
     </div>
 
     <script type="module" src="./frontend/js/core/terminal.js"></script>

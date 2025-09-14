@@ -1,5 +1,8 @@
+// File: frontend/js/core/terminal.js
+
 import { commands } from './command-handler.js';
 import { initializeAppWindows } from '../apps/app-manager.js';
+import { isChatting, exitChat, askSuika } from '../apps/suika-manager.js';
 
 // --- DOM ELEMENTS ---
 const terminal = document.getElementById('terminal');
@@ -17,18 +20,21 @@ export let currentPath = [];
 // --- CORE FUNCTIONS ---
 export function getFullPath() { return currentPath.join('/'); }
 export function getTopLevelDir() { return currentPath.length > 0 ? `${currentPath[0]}/` : '~'; }
-export function updateCurrentPath(newPath) { currentPath = newPath; }
+export function updateCurrentPath(newPath) { currentPath = newPath; updatePrompt(); }
 
 function updatePrompt() {
-    const path = `~/${getFullPath()}`;
-    currentPrompt.textContent = `monadmelon@web:${path}$`; 
+    if (!isChatting()) {
+        const path = `~/${getFullPath()}`;
+        currentPrompt.textContent = `monadmelon@web:${path}$`; 
+    }
 }
 
 function addOutput(text, isCommand = false) { 
     const output = document.createElement('div'); 
-    output.className = 'output'; 
+    output.className = 'output';
+    const promptText = isChatting() ? `>> ` : `${currentPrompt.textContent} `;
     if (isCommand) { 
-        output.innerHTML = `<span class="prompt">${currentPrompt.textContent} </span><span class="command">${text}</span>`; 
+        output.innerHTML = `<span class="prompt">${promptText}</span><span class="command">${text}</span>`; 
     } else { 
         output.textContent = text; 
     } 
@@ -37,83 +43,112 @@ function addOutput(text, isCommand = false) {
 }
 
 async function handleCommand() { 
-    const fullCommand = input.value.trim(); 
-    if (!fullCommand) return; 
-    addOutput(fullCommand, true); 
-    
-    const args = fullCommand.split(' '); 
-    const cmd = args[0].toLowerCase(); 
-    
-    if (commands[cmd]) { 
-        const result = await commands[cmd](args.slice(1)); 
-        if (result) addOutput(result); 
-    } else { 
-        addOutput(`${cmd}: command not found.`); 
-    } 
-    
-    commandHistory.push(fullCommand); 
-    historyIndex = commandHistory.length; 
-    input.value = ''; 
-    scrollToBottom(); 
+    const fullInput = input.value.trim(); 
+    if (!fullInput) return;
+    if (isChatting()) {
+        addOutput(fullInput, true);
+        input.value = '';
+        if (fullInput.toLowerCase() === 'bye' || fullInput.toLowerCase() === 'exit') {
+            exitChat();
+            updatePrompt();
+            addOutput("> Suika has returned to the background.");
+            return;
+        }
+        const thinkingMsg = document.createElement('div');
+        thinkingMsg.className = 'output';
+        thinkingMsg.textContent = '> Suika is thinking...';
+        outputContainer.appendChild(thinkingMsg);
+        scrollToBottom();
+        const response = await askSuika(fullInput);
+        thinkingMsg.textContent = response;
+        scrollToBottom();
+    } else {
+        addOutput(fullInput, true);
+        const args = fullInput.split(' '); 
+        const cmd = args[0].toLowerCase(); 
+        if (commands[cmd]) { 
+            const result = await commands[cmd](args.slice(1)); 
+            if (result) addOutput(result); 
+        } else { 
+            addOutput(`${cmd}: command not found.`); 
+        } 
+        commandHistory.push(fullInput); 
+        historyIndex = commandHistory.length; 
+        input.value = ''; 
+        scrollToBottom(); 
+    }
 }
 
 function scrollToBottom() { scrollAnchor.scrollIntoView(); }
 
 // --- INITIALIZATION ---
 async function initializeFileSystem() {
-    const fsMountMessage = document.getElementById('filesystem-mount-message');
+    const bootMsg = document.getElementById('filesystem-mount-message');
     try {
         const response = await fetch('./filesystem.json');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         directoryStructure = await response.json();
-        fsMountMessage.innerHTML += '[OK]';
+        bootMsg.textContent += ' [OK]';
     } catch (error) {
-        fsMountMessage.innerHTML += '<span style="color: #ff0000;">[FAILED]</span>';
-        console.error("Failed to load filesystem:", error);
-        directoryStructure = { '~': ['ERROR.txt'] };
+        console.error("Fatal Error: Could not load virtual filesystem.", error);
+        bootMsg.textContent += ' [FAILED]';
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'boot-message';
+        errorMsg.style.color = '#ff0000';
+        errorMsg.textContent = '> ERROR: VFS NOT FOUND. Cannot boot. Check filesystem.json path.';
+        bootMsg.parentNode.insertBefore(errorMsg, bootMsg.nextSibling);
+        return false;
     }
+    return true;
 }
 
 function initializeTerminal() {
     const bootScreen = document.getElementById('boot-screen');
+    const bootMessages = bootScreen.querySelectorAll('.boot-message, .ascii-art-line');
+
+    // Add a "power-off" effect to the boot text
+    bootMessages.forEach(el => {
+        el.style.transition = 'opacity 0.2s ease-out';
+        el.style.opacity = '0';
+    });
+
+    // After the text fades, hide the boot screen and show the terminal
     setTimeout(() => {
-        if(bootScreen) {
-            bootScreen.style.opacity = 0;
-            setTimeout(() => {
-                bootScreen.style.display = 'none';
-                terminal.style.display = 'block';
-                mobileButtons.style.visibility = 'visible';
-                mobileButtons.style.opacity = 1;
-                input.focus();
-            }, 1000);
+        bootScreen.style.display = 'none';
+        terminal.style.display = 'block';
+        if (window.innerWidth <= 768) {
+             mobileButtons.style.visibility = 'visible';
+             mobileButtons.style.opacity = '1';
         }
-    }, 8000);
+        input.focus();
+        scrollToBottom();
+    }, 300); // Wait for the new power-off effect to finish
 
     input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { handleCommand(); }
-        else if (e.key === 'ArrowUp') { 
-            e.preventDefault(); 
-            if (commandHistory.length > 0) { 
-                historyIndex = Math.max(0, historyIndex - 1); 
-                input.value = commandHistory[historyIndex] || ''; 
-            } 
-        }
-        else if (e.key === 'ArrowDown') { 
-            e.preventDefault(); 
-            historyIndex++; 
-            input.value = historyIndex < commandHistory.length ? commandHistory[historyIndex] : ''; 
-            if (historyIndex >= commandHistory.length) { 
-                historyIndex = commandHistory.length; 
-            } 
+        if (e.key === 'Enter') { handleCommand(); } 
+        else if (e.key === 'ArrowUp') {
+            if (historyIndex > 0) historyIndex--;
+            input.value = commandHistory[historyIndex] || '';
+        } else if (e.key === 'ArrowDown') {
+            if (historyIndex < commandHistory.length - 1) historyIndex++;
+            input.value = commandHistory[historyIndex] || '';
         }
     });
-    terminal.addEventListener('click', () => input.focus());
+
+    terminal.addEventListener('click', () => {
+        if (window.getSelection().toString() === '') {
+            input.focus();
+        }
+    });
 }
 
 // --- STARTUP ---
 document.addEventListener('DOMContentLoaded', async () => {
     initializeAppWindows();
-    await initializeFileSystem();
-    initializeTerminal();
+    const fsLoaded = await initializeFileSystem(); 
+    if (fsLoaded) {
+        // Wait for the full boot animation to play out before transitioning
+        setTimeout(initializeTerminal, 8000); 
+    }
     updatePrompt();
 });

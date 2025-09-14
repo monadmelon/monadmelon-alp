@@ -10,9 +10,12 @@ body { background-color: #0a0a0a; color: #00ff00; font-family: 'Courier New', mo
 #input { background: transparent; border: none; color: #00ff00; font-family: 'Courier New', monospace; font-size: 14px; outline: none; width: 100%; padding: 0; margin: 0; }
 .protected { user-select: none; opacity: 0.9; }
 #boot-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #0a0a0a; z-index: 1000; padding: 20px; overflow: hidden; }
-.boot-message { margin-bottom: 1px; opacity: 0; animation: typeIn 0.3s forwards; white-space: nowrap; }
+
+/* **THE ALIGNMENT FIX IS HERE** */
+.boot-message { margin-bottom: 1px; opacity: 0; animation: typeIn 0.3s forwards; white-space: pre; /* Ensures all spacing is preserved */ }
 @keyframes typeIn { to { opacity: 1; } }
 .ascii-art-line { margin-bottom: 0; opacity: 0; animation: typeIn 0.2s forwards; white-space: pre; font-family: 'Courier New', monospace; }
+
 .scanlines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0, 255, 0, 0.03) 1px, transparent 1px); background-size: 100% 3px; pointer-events: none; animation: scanline 10s linear infinite; }
 @keyframes scanline { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
 
