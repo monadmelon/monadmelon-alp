@@ -1,0 +1,13 @@
+TECH MANIFESTO
+
+Code should be elegant and minimal
+
+Systems should serve humans, not vice versa
+
+Privacy is not optional
+
+Technology should amplify creativity, not replace it
+
+The best interface is often no interface
+
+more to come...

@@ -1,0 +1,7 @@
+SOUND EXPLORATIONS
+
+My audio experiments and musical sketches.
+
+To launch the player, execute './audplayer' while in this directory.
+
+audio samples are now live...

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>monadmelon@web:~$</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #0a0a0a; color: #00ff00; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1; padding: 4px; height: 100vh; overflow: hidden; }
+        #terminal { height: 100%; overflow-y: auto; white-space: pre-wrap; display: none; }
+        #scroll-anchor { height: 1px; }
+        .input-line { display: flex; align-items: center; margin-bottom: 2px; }
+        .prompt { color: #ff00ff; margin-right: 6px; white-space: nowrap; }
+        .command { color: #00ff00; font-weight: bold; }
+        .output { margin-bottom: 2px; line-height: 1.2; font-family: 'Courier New', monospace; white-space: pre-wrap; }
+        #input { background: transparent; border: none; color: #00ff00; font-family: 'Courier New', monospace; font-size: 14px; outline: none; width: 100%; padding: 0; margin: 0; }
+        .protected { user-select: none; opacity: 0.9; }
+        #boot-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #0a0a0a; z-index: 1000; padding: 20px; overflow: hidden; }
+        .boot-message { margin-bottom: 1px; opacity: 0; animation: typeIn 0.3s forwards; white-space: nowrap; }
+        @keyframes typeIn { to { opacity: 1; } }
+        .ascii-art-line { margin-bottom: 0; opacity: 0; animation: typeIn 0.2s forwards; white-space: pre; font-family: 'Courier New', monospace; }
+        .scanlines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, rgba(0, 255, 0, 0.03) 1px, transparent 1px); background-size: 100% 3px; pointer-events: none; animation: scanline 10s linear infinite; }
+        @keyframes scanline { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
+        #app-window { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 1024px; height: 85vh; background-color: #0a0a0a; border: 1px solid #00ff00; z-index: 2000; box-shadow: 0 0 20px rgba(0, 255, 0, 0.2); flex-direction: column; }
+        .app-title-bar { background-color: #001100; border-bottom: 1px solid #00ff00; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; cursor: move; color: #ff00ff; user-select: none; }
+        .title-bar-buttons { display: flex; gap: 5px; }
+        .title-bar-btn { border: 1px solid; cursor: pointer; width: 20px; height: 20px; text-align: center; line-height: 18px; font-family: monospace; font-weight: bold; }
+        .minimize-btn { background-color: #ffff00; border-color: #ffff55; color: #001100; }
+        .close-btn { background-color: #ff0000; border-color: #ff5555; color: #001100; }
+        #app-content { flex-grow: 1; border: none; }
+        #taskbar { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background-color: #001100; border-top: 1px solid #00ff00; z-index: 3000; }
+        .taskbar-item { padding: 8px 15px; cursor: pointer; color: #00ff00; transition: background-color 0.2s; }
+        .taskbar-item:hover { background-color: #003300; }
+    </style>
+</head>
+<body>
+    <div id="boot-screen">
+        <div class="scanlines"></div>
+        <div class="boot-message" style="animation-delay: 0.5s">> INITIATING MONADMELON BOOT SEQUENCE</div>
+        <div class="boot-message" style="animation-delay: 1.2s">> LOADING KERNEL .................... [OK]</div>
+        <div id="filesystem-mount-message" class="boot-message" style="animation-delay: 2.0s">> MOUNTING VIRTUAL FILESYSTEM ....... </div>
+        <div class="boot-message" style="animation-delay: 2.8s">> INITIALIZING AUDIO SUBSYSTEM ....... [OK]</div>
+        <div class="boot-message" style="animation-delay: 3.6s">> STARTING SUIKA DAEMON ............ </div>
+        <div class="ascii-art-line" style="animation-delay: 4.0s">███████╗██╗   ██╗██╗██╗  ██╗ █████╗ </div>
+        <div class="ascii-art-line" style="animation-delay: 4.3s">██╔════╝██║   ██║██║██║ ██╔╝██╔══██╗</div>
+        <div class="ascii-art-line" style="animation-delay: 4.6s">███████╗██║   ██║██║█████╔╝ ███████║</div>
+        <div class="ascii-art-line" style="animation-delay: 4.9s">╚════██║██║   ██║██║██╔═██╗ ██╔══██║</div>
+        <div class="ascii-art-line" style="animation-delay: 5.2s">███████║╚██████╔╝██║██║  ██╗██║  ██║</div>
+        <div class="ascii-art-line" style="animation-delay: 5.5s">╚══════╝ ╚═════╝ ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝</div>
+        <div class="boot-message" style="animation-delay: 6.0s">[OK]</div>
+        <div class="boot-message" style="animation-delay: 6.5s">> SYSTEM READY</div>
+        <div class="boot-message" style="animation-delay: 7.0s">> WELCOME TO MONADMELON</div>
+    </div>
+
+    <div id="terminal">
+        <div class="output protected">a reflection of my mind. tech. philosophy. music.</div>
+        <div class="output protected">type 'help' to begin</div>
+        <br>
+        <div id="output-container"></div>
+        <div class="input-line">
+            <span class="prompt" id="current-prompt">monadmelon@web:~$</span>
+            <input type="text" id="input" autofocus>
+        </div>
+        <div id="scroll-anchor"></div>
+    </div>
+
+    <div id="app-window">
+        <div class="app-title-bar" id="app-title-bar">
+            <span>~/aud/audplayer</span>
+            <div class="title-bar-buttons">
+                <button class="title-bar-btn minimize-btn" onclick="minimizeAudPlayer()">-</button>
+                <button class="title-bar-btn close-btn" onclick="closeAudPlayer()">X</button>
+            </div>
+        </div>
+        <iframe id="app-content" tabindex="-1"></iframe>
+    </div>
+
+    <div id="taskbar">
+        <div class="taskbar-item" onclick="restoreAudPlayer()">[♫ audplayer]</div>
+    </div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const input = document.getElementById('input');
+        const appWindow = document.getElementById('app-window');
+        const appTitleBar = document.getElementById('app-title-bar');
+        const appContent = document.getElementById('app-content');
+        const taskbar = document.getElementById('taskbar');
+        const outputContainer = document.getElementById('output-container');
+        const scrollAnchor = document.getElementById('scroll-anchor');
+        const currentPrompt = document.getElementById('current-prompt');
+        
+        let isDragging = false, offsetX, offsetY;
+        let commandHistory = [], historyIndex = -1, currentDirectory = ['~'];
+        let directoryStructure = {};
+
+        // --- App Window, Dragging, and Taskbar Functions ---
+        function launchAudPlayer() {
+            terminal.style.display = 'none';
+            appWindow.style.display = 'flex';
+            appContent.src = 'audplayer.html';
+            appContent.focus();
+        }
+        function closeAudPlayer() {
+            appWindow.style.display = 'none';
+            appContent.src = 'about:blank';
+            taskbar.style.display = 'none';
+            terminal.style.display = 'block';
+            input.focus();
+        }
+        function minimizeAudPlayer() {
+            appWindow.style.display = 'none';
+            taskbar.style.display = 'block';
+            terminal.style.display = 'block';
+            input.focus();
+        }
+        function restoreAudPlayer() {
+            taskbar.style.display = 'none';
+            appWindow.style.display = 'flex';
+            terminal.style.display = 'none';
+            appContent.focus();
+        }
+        appTitleBar.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            offsetX = e.clientX - appWindow.offsetLeft;
+            offsetY = e.clientY - appWindow.offsetTop;
+            document.body.style.userSelect = 'none';
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            appWindow.style.left = `${e.clientX - offsetX}px`;
+            appWindow.style.top = `${e.clientY - offsetY}px`;
+            appWindow.style.transform = 'none'; 
+        });
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            document.body.style.userSelect = '';
+        });
+        
+        // --- Terminal Commands ---
+        const commands = {
+            help: () => `available commands:\n    whoami, ls, cd, cat, pwd, clear, date, echo, audplayer`,
+            whoami: () => `i am a black cat named suika.`,
+            ls: () => directoryStructure[getCurrentDirectory()]?.join('    ') || 'empty',
+            cd: (args) => {
+                if (!args[0]) return "cd: missing argument";
+                const target = args[0];
+                if (target === '~') { currentDirectory = ['~']; }
+                else if (target === '..' || target === '../') { if (currentDirectory.length > 1) currentDirectory.pop(); }
+                else {
+                    const targetDir = target.endsWith('/') ? target : target + '/';
+                    if (directoryStructure[getCurrentDirectory()]?.includes(targetDir)) { currentDirectory.push(targetDir); }
+                    else { return `cd: ${target}: no such directory`; }
+                }
+                updatePrompt(); return '';
+            },
+            pwd: () => currentDirectory.join('/').replace(/\/\//g, '/'),
+            cat: async (args) => {
+                if (!args[0]) return "cat: missing argument";
+                const filename = args[0];
+                const currentDir = getCurrentDirectory();
+                if (filename.endsWith('/')) return `cat: ${filename}: Is a directory`;
+                if (!directoryStructure[currentDir]?.includes(filename)) return `cat: ${filename}: no such file`;
+                let path = 'content/';
+                if (currentDir !== '~') path += currentDir;
+                path += filename;
+                try {
+                    const response = await fetch(path);
+                    if (!response.ok) return `cat: error fetching '${filename}'`;
+                    return await response.text();
+                } catch (error) { return `cat: network error fetching '${filename}'`; }
+            },
+            clear: () => { outputContainer.innerHTML = ''; return ''; },
+            date: () => new Date().toLocaleString(),
+            echo: (args) => args.join(' '),
+            audplayer: () => { launchAudPlayer(); return ''; }
+        };
+
+        // --- Terminal Helper Functions ---
+        function getCurrentDirectory() { return currentDirectory[currentDirectory.length - 1]; }
+        function updatePrompt() { const path = currentDirectory.join('/').replace(/\/\//g, '/'); currentPrompt.textContent = `monadmelon@web:${path}$`; }
+        function addOutput(text, isCommand = false) { const output = document.createElement('div'); output.className = 'output'; if (isCommand) { output.innerHTML = `<span class="prompt">${currentPrompt.textContent} </span><span class="command">${text}</span>`; } else { output.textContent = text; } outputContainer.appendChild(output); scrollToBottom(); }
+        async function handleCommand() { const fullCommand = input.value.trim(); if (!fullCommand) return; addOutput(fullCommand, true); if (fullCommand.startsWith('./')) { const executable = fullCommand.substring(2); if (executable === 'audplayer' && getCurrentDirectory() === 'aud/') { launchAudPlayer(); } else { addOutput(`-bash: ${fullCommand}: no such file or directory`); } } else { const args = fullCommand.split(' '); const cmd = args[0].toLowerCase(); if (commands[cmd]) { const result = await commands[cmd](args.slice(1)); if (result) addOutput(result); } else { addOutput(`${cmd}: command not found.`); } } commandHistory.push(fullCommand); historyIndex = commandHistory.length; input.value = ''; scrollToBottom(); }
+        function scrollToBottom() { scrollAnchor.scrollIntoView(); }
+
+        // --- Initialization Logic ---
+        async function initializeFileSystem() {
+            const fsMountMessage = document.getElementById('filesystem-mount-message');
+            try {
+                const response = await fetch('content/filesystem.json');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                directoryStructure = await response.json();
+                fsMountMessage.innerHTML += '[OK]';
+            } catch (error) {
+                fsMountMessage.innerHTML += '<span style="color: #ff0000;">[FAILED]</span>';
+                console.error("Failed to load filesystem:", error);
+                directoryStructure = { '~': ['ERROR.txt'] };
+            }
+        }
+
+        function initializeTerminal() {
+            const bootScreen = document.getElementById('boot-screen');
+            setTimeout(() => {
+                if(bootScreen) {
+                    bootScreen.style.opacity = 0;
+                    setTimeout(() => {
+                        bootScreen.style.display = 'none';
+                        terminal.style.display = 'block';
+                        input.focus();
+                    }, 1000);
+                }
+            }, 8000);
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { handleCommand(); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); if (commandHistory.length > 0) { historyIndex = Math.max(0, historyIndex - 1); input.value = commandHistory[historyIndex] || ''; } }
+                else if (e.key === 'ArrowDown') { e.preventDefault(); historyIndex++; input.value = historyIndex < commandHistory.length ? commandHistory[historyIndex] : ''; if (historyIndex >= commandHistory.length) { historyIndex = commandHistory.length; } }
+            });
+            terminal.addEventListener('click', () => input.focus());
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeFileSystem();
+            initializeTerminal();
+        });
+    </script>
+</body>
+</html>

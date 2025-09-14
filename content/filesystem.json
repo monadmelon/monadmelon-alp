@@ -1,0 +1,11 @@
+{
+    "~": ["README.txt", "sys/", "lib/", "log/", "phil/", "aud/", "usr/", "var/", "net/"],
+    "sys/": ["manifesto.txt"],
+    "lib/": [],
+    "log/": [],
+    "phil/": ["thoughts.txt"],
+    "aud/": ["soundscape.txt", "audplayer"],
+    "usr/": ["suika.txt"],
+    "var/": ["rants.txt"],
+    "net/": ["links.txt"]
+}

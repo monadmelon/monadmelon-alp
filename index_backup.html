@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>monadmelon@web:~$</title>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        body {
+            background-color: #0a0a0a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1;
+            padding: 4px;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #terminal {
+            height: 100%;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        #scroll-anchor {
+            height: 1px;
+        }
+        .input-line {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+        .prompt {
+            color: #ff00ff;
+            margin-right: 6px;
+            white-space: nowrap;
+        }
+        .command {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        .output {
+            margin-bottom: 2px;
+            line-height: 1.2;
+            font-family: 'Courier New', monospace;
+        }
+        #input {
+            background: transparent;
+            border: none;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            outline: none;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        .protected {
+            user-select: none;
+            opacity: 0.9;
+        }
+        .blink {
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* Boot sequence styles */
+        #boot-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0a0a0a;
+            z-index: 1000;
+            padding: 20px;
+            overflow: hidden;
+        }
+        .boot-message {
+            margin-bottom: 1px;
+            opacity: 0;
+            animation: typeIn 0.3s forwards;
+            white-space: nowrap;
+        }
+        @keyframes typeIn {
+            to { opacity: 1; }
+        }
+        .ascii-art-line {
+            margin-bottom: 0;
+            opacity: 0;
+            animation: typeIn 0.2s forwards;
+            white-space: pre;
+            font-family: 'Courier New', monospace;
+        }
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, 
+                rgba(0, 255, 0, 0.03) 1px, 
+                transparent 1px);
+            background-size: 100% 3px;
+            pointer-events: none;
+            animation: scanline 10s linear infinite;
+        }
+        @keyframes scanline {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
+        }
+        .type-cursor::after {
+            content: '_';
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div id="boot-screen">
+        <div class="scanlines"></div>
+        <div class="boot-message" style="animation-delay: 0.5s">> INITIATING MONADMELON BOOT SEQUENCE</div>
+        <div class="boot-message" style="animation-delay: 1.2s">> LOADING KERNEL .................... [OK]</div>
+        <div class="boot-message" style="animation-delay: 2.0s">> MOUNTING PHILOSOPHY PARTITION ...... [OK]</div>
+        <div class="boot-message" style="animation-delay: 2.8s">> INITIALIZING AUDIO SUBSYSTEM ....... [OK]</div>
+        <div class="boot-message" style="animation-delay: 3.6s">> STARTING SUIKA DAEMON ............ </div>
+        
+        <!-- ASCII Art types out line by line -->
+        <div class="ascii-art-line" style="animation-delay: 4.0s">███████╗██╗   ██╗██╗██╗  ██╗ █████╗ </div>
+        <div class="ascii-art-line" style="animation-delay: 4.3s">██╔════╝██║   ██║██║██║ ██╔╝██╔══██╗</div>
+        <div class="ascii-art-line" style="animation-delay: 4.6s">███████╗██║   ██║██║█████╔╝ ███████║</div>
+        <div class="ascii-art-line" style="animation-delay: 4.9s">╚════██║██║   ██║██║██╔═██╗ ██╔══██║</div>
+        <div class="ascii-art-line" style="animation-delay: 5.2s">███████║╚██████╔╝██║██║  ██╗██║  ██║</div>
+        <div class="ascii-art-line" style="animation-delay: 5.5s">╚══════╝ ╚═════╝ ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝</div>
+
+        <div class="boot-message" style="animation-delay: 6.0s">[OK]</div>
+        <div class="boot-message" style="animation-delay: 6.5s">> SYSTEM READY</div>
+        <div class="boot-message" style="animation-delay: 7.0s">> WELCOME TO MONADMELON</div>
+    </div>
+
+    <div id="terminal" style="display: none;">
+        <div class="output protected">a reflection of my mind. tech. philosophy. music.</div>
+        <div class="output protected">type 'help' to begin</div>
+        <br>
+        
+        <div id="output-container"></div>
+        
+        <div class="input-line">
+            <span class="prompt" id="current-prompt">monadmelon@web:~$</span>
+            <input type="text" id="input" autofocus>
+        </div>
+        <div id="scroll-anchor"></div>
+    </div>
+
+    <script>
+        // Boot sequence completion
+        setTimeout(() => {
+            document.getElementById('boot-screen').style.opacity = 0;
+            setTimeout(() => {
+                document.getElementById('boot-screen').style.display = 'none';
+                document.getElementById('terminal').style.display = 'block';
+                document.getElementById('input').focus();
+            }, 1000);
+        }, 8000);
+
+        // Terminal functionality
+        const terminal = document.getElementById('terminal');
+        const outputContainer = document.getElementById('output-container');
+        const input = document.getElementById('input');
+        const scrollAnchor = document.getElementById('scroll-anchor');
+        const currentPrompt = document.getElementById('current-prompt');
+        
+        let commandHistory = [];
+        let historyIndex = -1;
+        let currentDirectory = ['~'];
+
+        // Enhanced directory structure with proper folder contents
+        const directoryStructure = {
+            '~': ['README.md', 'sys/', 'phil/', 'aud/', 'usr/', 'var/', 'net/'],
+            'sys/': ['manifesto.txt'],
+            'phil/': ['thoughts.md'],
+            'aud/': ['soundscape.txt'],
+            'usr/': ['suika.bio'],
+            'var/': ['rants.log'],
+            'net/': ['links.txt']
+        };
+
+        const commands = {
+            help: () => `available commands:
+    whoami      - who i am
+    ls          - list current directory
+    cd          - change directory (e.g., 'cd sys' or 'cd ..' or 'cd ~')
+    cat         - read content (e.g., 'cat README.md')
+    pwd         - show current directory
+    clear       - clear terminal
+    date        - show current date
+    echo        - echo text back`,
+
+            whoami: () => `i am a black cat named suika.`,
+
+            ls: () => {
+                const currentDir = getCurrentDirectory();
+                return directoryStructure[currentDir]?.join('    ') || 'empty';
+            },
+
+            cd: (args) => {
+                if (!args[0]) return "cd: missing argument. usage: 'cd [directory]'";
+                
+                const target = args[0];
+                
+                if (target === '~') {
+                    currentDirectory = ['~'];
+                    updatePrompt();
+                    return '';
+                }
+                
+                if (target === '..' || target === '../') {
+                    if (currentDirectory.length > 1) {
+                        currentDirectory.pop();
+                        updatePrompt();
+                        return '';
+                    }
+                    return 'already at root directory';
+                }
+                
+                // Add trailing slash for directory consistency
+                const targetDir = target.endsWith('/') ? target : target + '/';
+                const currentDir = getCurrentDirectory();
+                
+                // Check if directory exists in current location
+                if (directoryStructure[currentDir]?.includes(targetDir)) {
+                    currentDirectory.push(targetDir);
+                    updatePrompt();
+                    return '';
+                }
+                
+                return `cd: ${target}: no such directory`;
+            },
+
+            pwd: () => currentDirectory.join('/').replace(/\/\//g, '/'),
+
+            cat: (args) => {
+                if (!args[0]) return "cat: missing argument. usage: 'cat [file]'";
+                
+                const filename = args[0];
+                const currentDir = getCurrentDirectory();
+                
+                // Check if it's a directory (ends with slash)
+                if (filename.endsWith('/')) {
+                    return `cat: ${filename}: Is a directory`;
+                }
+                
+                // Check if file exists in current directory
+                if (!directoryStructure[currentDir]?.includes(filename)) {
+                    return `cat: ${filename}: no such file`;
+                }
+                
+                // File content definitions
+                const content = {
+                    'README.md': `# MONADMELON\n\na reflection of my mind. tech. philosophy. music.\n\n## DIRECTORY STRUCTURE\n\nsys/     - technology, systems, code\nphil/    - philosophy, thoughts, meditations\naud/     - music, sound, audio explorations\nusr/     - about suika (the black cat)\nvar/     - rants, random thoughts\nnet/     - external connections & links\n\n## BASIC COMMANDS\n\nhelp     - show this help\nls       - list directory contents\ncd       - change directory (use 'cd ~' to return home)\ncat      - read files\nclear    - clear terminal\nwhoami   - learn about suika\n\n## NOTES\n\n- This terminal is the interface to my digital garden\n- Type 'help' anytime for command reference\n- Content grows organically over time\n\nWelcome. Explore freely.`,
+                    'manifesto.txt': "TECH MANIFESTO\n\n- Code should be elegant and minimal\n- Systems should serve humans, not vice versa\n- Privacy is not optional\n- Technology should amplify creativity, not replace it\n- The best interface is often no interface\n\n> more to come...",
+                    'thoughts.md': "PHILOSOPHICAL THOUGHTS\n\n- If a tree falls in a forest and no one hears it, does it make a sound?\n- Is consciousness fundamental or emergent?\n- The map is not the territory\n- We don't see things as they are, we see them as we are\n\n> deeper explorations pending...",
+                    'soundscape.txt': "SOUND EXPLORATIONS\n\n- Ambient textures and melodic fragments\n- Field recordings of urban environments\n- Digital vs analog soundscapes\n- The psychology of sound and memory\n\n> audio samples coming soon...",
+                    'suika.bio': "ABOUT SUIKA\n\nName: Suika (Watermelon in Japanese)\nType: Black cat\nPurpose: Guardian of this digital space\nInterests: Napping in sunbeams, watching code compile, philosophical debates\n\n> meow...",
+                    'rants.log': "RANDOM THOUGHTS LOG\n\n- Why do we park in driveways and drive on parkways?\n- If tomatoes are a fruit, is ketchup a smoothie?\n- The paradox of 'less is more' - if less is more, then wouldn't more be less?\n\n> more nonsense to come...",
+                    'links.txt': "EXTERNAL CONNECTIONS\n\n- GitHub: [under construction]\n- Bandcamp: [coming soon]\n- SoundCloud: [audio experiments in progress]\n\n> connections will be established shortly"
+                };
+                
+                return content[filename] || `cat: cannot display content of '${filename}'`;
+            },
+
+            clear: () => {
+                outputContainer.innerHTML = '';
+                return 'terminal cleared';
+            },
+
+            date: () => new Date().toLocaleString(),
+
+            echo: (args) => args.join(' ') || "echo: missing argument"
+        };
+
+        function getCurrentDirectory() {
+            return currentDirectory[currentDirectory.length - 1];
+        }
+
+        function updatePrompt() {
+            const path = currentDirectory.join('/').replace(/\/\//g, '/');
+            const promptText = `monadmelon@web:${path}$`;
+            currentPrompt.textContent = promptText;
+            document.title = promptText;
+        }
+
+        function addOutput(text, isCommand = false) {
+            const output = document.createElement('div');
+            output.className = 'output';
+            
+            if (isCommand) {
+                const promptSpan = document.createElement('span');
+                promptSpan.className = 'prompt';
+                promptSpan.textContent = `monadmelon@web:${currentDirectory.join('/').replace(/\/\//g, '/')}$ `;
+                
+                const commandSpan = document.createElement('span');
+                commandSpan.className = 'command';
+                commandSpan.textContent = text;
+                
+                output.appendChild(promptSpan);
+                output.appendChild(commandSpan);
+            } else {
+                output.textContent = text;
+            }
+            
+            outputContainer.appendChild(output);
+            scrollToBottom();
+        }
+
+        function handleCommand() {
+            const command = input.value.trim();
+            if (!command) return;
+
+            addOutput(command, true);
+            
+            const args = command.split(' ');
+            const cmd = args[0].toLowerCase();
+            
+            let result;
+            if (commands[cmd]) {
+                result = commands[cmd](args.slice(1));
+            } else {
+                result = `${cmd}: command not found. try 'help'.`;
+            }
+            
+            if (result) addOutput(result);
+            
+            commandHistory.push(command);
+            historyIndex = commandHistory.length;
+            input.value = '';
+            
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            scrollAnchor.scrollIntoView();
+        }
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                handleCommand();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (commandHistory.length > 0) {
+                    historyIndex = Math.max(0, historyIndex - 1);
+                    input.value = commandHistory[historyIndex];
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    input.value = commandHistory[historyIndex];
+                } else {
+                    input.value = '';
+                    historyIndex = commandHistory.length;
+                }
+            }
+        });
+
+        terminal.addEventListener('click', () => input.focus());
+        input.addEventListener('blur', () => setTimeout(() => input.focus(), 10));
+
+        
+    </script>
+</body>
+</html>
