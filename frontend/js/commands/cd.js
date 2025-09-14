@@ -1,34 +1,43 @@
-import { directoryStructure, currentPath, updateCurrentPath, getTopLevelDir } from '../core/terminal.js';
+// File: frontend/js/commands/cd.js
+import { directoryStructure, currentPath, updateCurrentPath } from '../core/terminal.js';
 
 export function cd(args) {
-    if (!args[0]) { 
-        return; // No-op for empty cd, could also go to ~
-    }
-    const target = args[0].replace(/\/$/, '');
-
-    if (target === '~') {
+    if (!args[0] || args[0] === '~') {
         updateCurrentPath([]);
-    } else if (target === '..') {
-        if (currentPath.length > 0) {
-            const newPath = [...currentPath];
-            newPath.pop();
-            updateCurrentPath(newPath);
-        }
-    } else {
-        const newPath = [...currentPath, target];
-        const newPathStr = newPath.join('/') + '/';
-        const topLevelDirKey = getTopLevelDir();
-        const entries = directoryStructure[topLevelDirKey] || (topLevelDirKey === '~' ? Object.keys(directoryStructure).filter(k=>k!=='~') : []);
-        
-        const isRootDir = currentPath.length === 0 && directoryStructure[`${target}/`];
-        const isValidSubDir = entries.some(p => p === newPathStr || p.startsWith(newPathStr));
+        return;
+    }
+    
+    const target = args[0].replace(/\/$/, ''); // remove trailing slash if present
 
-        if (isRootDir) {
+    if (target === '..') {
+        if (currentPath.length > 0) {
+            currentPath.pop();
+            updateCurrentPath(currentPath);
+        }
+        return;
+    }
+
+    // Handle cd into a top-level directory from root
+    if (currentPath.length === 0) {
+        if (directoryStructure[`${target}/`]) {
             updateCurrentPath([target]);
-        } else if (isValidSubDir) {
-            updateCurrentPath(newPath);
         } else {
             return `cd: ${target}: No such directory`;
         }
+        return;
+    }
+
+    // Handle cd into a subdirectory
+    const topLevelDir = `${currentPath[0]}/`;
+    const allEntries = directoryStructure[topLevelDir] || [];
+    const newPathPrefix = [...currentPath.slice(1), target].join('/') + '/';
+
+    const isValidDir = allEntries.some(entry => entry === newPathPrefix || entry.startsWith(newPathPrefix));
+
+    if (isValidDir) {
+        const newPath = [...currentPath, target];
+        updateCurrentPath(newPath);
+    } else {
+        return `cd: ${target}: No such directory`;
     }
 }
