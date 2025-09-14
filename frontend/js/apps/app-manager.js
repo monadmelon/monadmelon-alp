@@ -1,3 +1,5 @@
+// File: frontend/js/apps/app-manager.js
+
 // --- DOM ELEMENTS ---
 const audplayerWindow = document.getElementById('audplayer-window');
 const audplayerContent = document.getElementById('audplayer-content');
@@ -34,30 +36,57 @@ function makeDraggable(windowElement) {
 }
 
 // --- MOBILE BUTTON COMMAND HELPER ---
-export function insertCommand(cmd, execute = false) { 
-    // This is a global function, so we need to attach it to the window object
-    // to make it accessible from the onclick attribute in index.html
+export function insertCommand() { 
     window.insertCommand = (cmd, execute) => {
-        input.value = cmd;
-        input.focus();
-        // We need to simulate the Enter key press for handleCommand to be called
-        const enterEvent = new KeyboardEvent('keydown', { 'key': 'Enter' });
-        input.dispatchEvent(enterEvent);
+        const inputElement = document.getElementById('input');
+        const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
+        inputElement.value = cmd;
+        if (execute) {
+            inputElement.dispatchEvent(event);
+        }
     }
 }
 
 // --- APP MANAGEMENT FUNCTIONS ---
 // We attach these to the window object so the onclick attributes in index.html can find them.
 function initializeAppManagement() {
-    window.launchAudPlayer = () => { terminal.style.display = 'none'; audplayerWindow.style.display = 'flex'; audplayerContent.src = './audplayer.html'; audplayerContent.focus(); }
+    // --- AudPlayer Functions ---
+    window.launchAudPlayer = () => { 
+        terminal.style.display = 'none';
+        notesAppWindow.style.display = 'none'; // Hide other open windows
+        audplayerWindow.style.display = 'flex';
+        if (!audplayerContent.src) audplayerContent.src = './audplayer.html';
+        audplayerContent.focus(); 
+    }
     window.closeAudPlayer = () => { audplayerWindow.style.display = 'none'; audplayerContent.src = 'about:blank'; audplayerTaskbarItem.style.display = 'none'; terminal.style.display = 'block'; mobileButtons.style.bottom = '0px'; input.focus(); }
     window.minimizeAudPlayer = () => { audplayerWindow.style.display = 'none'; audplayerTaskbarItem.style.display = 'block'; terminal.style.display = 'block'; mobileButtons.style.bottom = `${taskbar.offsetHeight}px`; input.focus(); }
-    window.restoreAudPlayer = () => { audplayerTaskbarItem.style.display = 'none'; notesAppWindow.style.display = 'none'; notesAppTaskbarItem.style.display = 'none'; audplayerWindow.style.display = 'flex'; terminal.style.display = 'none'; mobileButtons.style.bottom = '0px'; audplayerContent.focus(); }
+    window.restoreAudPlayer = () => { 
+        notesAppWindow.style.display = 'none'; // Hide other open windows
+        audplayerTaskbarItem.style.display = 'none';
+        audplayerWindow.style.display = 'flex';
+        terminal.style.display = 'none';
+        mobileButtons.style.bottom = '0px';
+        audplayerContent.focus(); 
+    }
     
-    window.launchNotesApp = () => { terminal.style.display = 'none'; notesAppWindow.style.display = 'flex'; notesAppContent.src = './notes.html'; notesAppContent.focus(); }
+    // --- Notes App Functions ---
+    window.launchNotesApp = () => { 
+        terminal.style.display = 'none';
+        audplayerWindow.style.display = 'none'; // Hide other open windows
+        notesAppWindow.style.display = 'flex';
+        if (!notesAppContent.src) notesAppContent.src = './notes.html';
+        notesAppContent.focus(); 
+    }
     window.closeNotesApp = () => { notesAppWindow.style.display = 'none'; notesAppContent.src = 'about:blank'; notesAppTaskbarItem.style.display = 'none'; terminal.style.display = 'block'; mobileButtons.style.bottom = '0px'; input.focus(); }
     window.minimizeNotesApp = () => { notesAppWindow.style.display = 'none'; notesAppTaskbarItem.style.display = 'block'; terminal.style.display = 'block'; mobileButtons.style.bottom = `${taskbar.offsetHeight}px`; input.focus(); }
-    window.restoreNotesApp = () => { notesAppTaskbarItem.style.display = 'none'; audplayerWindow.style.display = 'none'; audplayerTaskbarItem.style.display = 'none'; notesAppWindow.style.display = 'flex'; terminal.style.display = 'none'; mobileButtons.style.bottom = '0px'; notesAppContent.focus(); }
+    window.restoreNotesApp = () => { 
+        audplayerWindow.style.display = 'none'; // Hide other open windows
+        notesAppTaskbarItem.style.display = 'none';
+        notesAppWindow.style.display = 'flex';
+        terminal.style.display = 'none';
+        mobileButtons.style.bottom = '0px';
+        notesAppContent.focus(); 
+    }
 }
 
 // --- INITIALIZER ---
