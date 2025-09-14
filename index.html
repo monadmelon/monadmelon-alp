@@ -6,13 +6,14 @@
     <title>monadmelon@web:~$</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background-color: #0a0a0a; color: #00ff00; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1; padding: 4px; height: 100vh; overflow: hidden; }
+        html, body { height: 100%; }
+        body { background-color: #0a0a0a; color: #00ff00; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1; padding: 4px; overflow: hidden; }
         #terminal { height: 100%; overflow-y: auto; white-space: pre-wrap; display: none; }
         #scroll-anchor { height: 1px; }
         .input-line { display: flex; align-items: center; margin-bottom: 2px; }
         .prompt { color: #ff00ff; margin-right: 6px; white-space: nowrap; }
         .command { color: #00ff00; font-weight: bold; }
-        .output { margin-bottom: 2px; line-height: 1.2; font-family: 'Courier New', monospace; white-space: pre-wrap; }
+        .output { margin-bottom: 2px; line-height: 1.2; font-family: 'Courier New', monospace; white-space: pre-wrap; word-break: break-all; }
         #input { background: transparent; border: none; color: #00ff00; font-family: 'Courier New', monospace; font-size: 14px; outline: none; width: 100%; padding: 0; margin: 0; }
         .protected { user-select: none; opacity: 0.9; }
         #boot-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #0a0a0a; z-index: 1000; padding: 20px; overflow: hidden; }
@@ -31,6 +32,53 @@
         #taskbar { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background-color: #001100; border-top: 1px solid #00ff00; z-index: 3000; }
         .taskbar-item { padding: 8px 15px; cursor: pointer; color: #00ff00; transition: background-color 0.2s; }
         .taskbar-item:hover { background-color: #003300; }
+
+        #mobile-buttons {
+            display: none;
+            visibility: hidden;
+            opacity: 0;
+            /* **UPDATED:** Added 'bottom' to transition for smooth movement */
+            transition: opacity 0.5s ease-in, bottom 0.3s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: 45px;
+            }
+            #app-window {
+                width: 100%;
+                height: 100%;
+                top: 0;
+                left: 0;
+                transform: none !important;
+                border: none;
+            }
+            .app-title-bar { cursor: default; }
+
+            #mobile-buttons {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                background-color: #001100;
+                border-top: 1px solid #00ff00;
+                padding: 4px;
+                justify-content: space-around;
+                z-index: 4000;
+            }
+            #mobile-buttons button {
+                background: transparent;
+                border: 1px solid #00ff00;
+                color: #00ff00;
+                font-family: 'Courier New', monospace;
+                font-size: 14px;
+                padding: 5px 8px;
+                margin: 2px;
+                flex-grow: 1;
+                text-align: center;
+            }
+        }
     </style>
 </head>
 <body>
@@ -59,7 +107,7 @@
         <div id="output-container"></div>
         <div class="input-line">
             <span class="prompt" id="current-prompt">monadmelon@web:~$</span>
-            <input type="text" id="input" autofocus>
+            <input type="text" id="input" autofocus autocapitalize="none" autocorrect="off">
         </div>
         <div id="scroll-anchor"></div>
     </div>
@@ -79,6 +127,12 @@
         <div class="taskbar-item" onclick="restoreAudPlayer()">[♫ audplayer]</div>
     </div>
 
+    <div id="mobile-buttons">
+        <button onclick="insertCommand('help', true)">help</button>
+        <button onclick="insertCommand('audplayer', true)">audplayer</button>
+        <button onclick="insertCommand('clear', true)">clear</button>
+    </div>
+
     <script>
         const terminal = document.getElementById('terminal');
         const input = document.getElementById('input');
@@ -89,16 +143,24 @@
         const outputContainer = document.getElementById('output-container');
         const scrollAnchor = document.getElementById('scroll-anchor');
         const currentPrompt = document.getElementById('current-prompt');
+        const mobileButtons = document.getElementById('mobile-buttons');
         
         let isDragging = false, offsetX, offsetY;
         let commandHistory = [], historyIndex = -1, currentDirectory = ['~'];
         let directoryStructure = {};
 
-        // --- App Window, Dragging, and Taskbar Functions ---
+        function insertCommand(cmd, execute = false) {
+            input.value = cmd;
+            input.focus();
+            if (execute) {
+                handleCommand();
+            }
+        }
+
         function launchAudPlayer() {
             terminal.style.display = 'none';
             appWindow.style.display = 'flex';
-            appContent.src = './audplayer.html'; // Path updated for deployment
+            appContent.src = './audplayer.html';
             appContent.focus();
         }
         function closeAudPlayer() {
@@ -106,21 +168,30 @@
             appContent.src = 'about:blank';
             taskbar.style.display = 'none';
             terminal.style.display = 'block';
+            // **UPDATED:** Reset mobile buttons position
+            mobileButtons.style.bottom = '0px';
             input.focus();
         }
         function minimizeAudPlayer() {
             appWindow.style.display = 'none';
             taskbar.style.display = 'block';
             terminal.style.display = 'block';
+            // **UPDATED:** Move mobile buttons up to accommodate taskbar
+            mobileButtons.style.bottom = `${taskbar.offsetHeight}px`;
             input.focus();
         }
         function restoreAudPlayer() {
             taskbar.style.display = 'none';
             appWindow.style.display = 'flex';
             terminal.style.display = 'none';
+            // **UPDATED:** Reset mobile buttons position
+            mobileButtons.style.bottom = '0px';
             appContent.focus();
         }
         appTitleBar.addEventListener('mousedown', (e) => {
+            if (window.innerWidth <= 768 || e.target.classList.contains('title-bar-btn')) {
+                return;
+            }
             isDragging = true;
             offsetX = e.clientX - appWindow.offsetLeft;
             offsetY = e.clientY - appWindow.offsetTop;
@@ -137,7 +208,6 @@
             document.body.style.userSelect = '';
         });
         
-        // --- Terminal Commands ---
         const commands = {
             help: () => `available commands:\n    whoami, ls, cd, cat, pwd, clear, date, echo, audplayer`,
             whoami: () => `i am a black cat named suika.`,
@@ -161,7 +231,7 @@
                 const currentDir = getCurrentDirectory();
                 if (filename.endsWith('/')) return `cat: ${filename}: Is a directory`;
                 if (!directoryStructure[currentDir]?.includes(filename)) return `cat: ${filename}: no such file`;
-                let path = './content/'; // Path updated for deployment
+                let path = './content/';
                 if (currentDir !== '~') path += currentDir;
                 path += filename;
                 try {
@@ -176,18 +246,16 @@
             audplayer: () => { launchAudPlayer(); return ''; }
         };
 
-        // --- Terminal Helper Functions ---
         function getCurrentDirectory() { return currentDirectory[currentDirectory.length - 1]; }
         function updatePrompt() { const path = currentDirectory.join('/').replace(/\/\//g, '/'); currentPrompt.textContent = `monadmelon@web:${path}$`; }
         function addOutput(text, isCommand = false) { const output = document.createElement('div'); output.className = 'output'; if (isCommand) { output.innerHTML = `<span class="prompt">${currentPrompt.textContent} </span><span class="command">${text}</span>`; } else { output.textContent = text; } outputContainer.appendChild(output); scrollToBottom(); }
-        async function handleCommand() { const fullCommand = input.value.trim(); if (!fullCommand) return; addOutput(fullCommand, true); if (fullCommand.startsWith('./')) { const executable = fullCommand.substring(2); if (executable === 'audplayer' && getCurrentDirectory() === 'aud/') { launchAudPlayer(); } else { addOutput(`-bash: ${fullCommand}: no such file or directory`); } } else { const args = fullCommand.split(' '); const cmd = args[0].toLowerCase(); if (commands[cmd]) { const result = await commands[cmd](args.slice(1)); if (result) addOutput(result); } else { addOutput(`${cmd}: command not found.`); } } commandHistory.push(fullCommand); historyIndex = commandHistory.length; input.value = ''; scrollToBottom(); }
+        async function handleCommand() { const fullCommand = input.value.trim(); if (!fullCommand) return; addOutput(fullCommand, true); if (fullCommand.startsWith('./')) { const executable = fullCommand.substring(2); if (executable === 'audplayer' && getCurrentDirectory() === 'aud/') { launchAudPlayer(); } else { addOutput(`-bash: ${executable}: no such file or directory`); } } else { const args = fullCommand.split(' '); const cmd = args[0].toLowerCase(); if (commands[cmd]) { const result = await commands[cmd](args.slice(1)); if (result) addOutput(result); } else { addOutput(`${cmd}: command not found.`); } } commandHistory.push(fullCommand); historyIndex = commandHistory.length; input.value = ''; scrollToBottom(); }
         function scrollToBottom() { scrollAnchor.scrollIntoView(); }
 
-        // --- Initialization Logic ---
         async function initializeFileSystem() {
             const fsMountMessage = document.getElementById('filesystem-mount-message');
             try {
-                const response = await fetch('./content/filesystem.json'); // Path updated for deployment
+                const response = await fetch('./content/filesystem.json');
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 directoryStructure = await response.json();
                 fsMountMessage.innerHTML += '[OK]';
@@ -206,6 +274,8 @@
                     setTimeout(() => {
                         bootScreen.style.display = 'none';
                         terminal.style.display = 'block';
+                        mobileButtons.style.visibility = 'visible';
+                        mobileButtons.style.opacity = 1;
                         input.focus();
                     }, 1000);
                 }
@@ -213,8 +283,21 @@
 
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') { handleCommand(); }
-                else if (e.key === 'ArrowUp') { e.preventDefault(); if (commandHistory.length > 0) { historyIndex = Math.max(0, historyIndex - 1); input.value = commandHistory[historyIndex] || ''; } }
-                else if (e.key === 'ArrowDown') { e.preventDefault(); historyIndex++; input.value = historyIndex < commandHistory.length ? commandHistory[historyIndex] : ''; if (historyIndex >= commandHistory.length) { historyIndex = commandHistory.length; } }
+                else if (e.key === 'ArrowUp') { 
+                    e.preventDefault(); 
+                    if (commandHistory.length > 0) { 
+                        historyIndex = Math.max(0, historyIndex - 1); 
+                        input.value = commandHistory[historyIndex] || ''; 
+                    } 
+                }
+                else if (e.key === 'ArrowDown') { 
+                    e.preventDefault(); 
+                    historyIndex++; 
+                    input.value = historyIndex < commandHistory.length ? commandHistory[historyIndex] : ''; 
+                    if (historyIndex >= commandHistory.length) { 
+                        historyIndex = commandHistory.length; 
+                    } 
+                }
             });
             terminal.addEventListener('click', () => input.focus());
         }
