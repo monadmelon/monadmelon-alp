@@ -48,3 +48,34 @@ body { background-color: #0a0a0a; color: #00ff00; font-family: 'Courier New', mo
     #mobile-buttons { display: flex; position: fixed; bottom: 0; left: 0; width: 100%; background-color: #001100; border-top: 1px solid #00ff00; padding: 4px; justify-content: space-around; z-index: 4000; }
     #mobile-buttons button { background: transparent; border: 1px solid #00ff00; color: #00ff00; font-family: 'Courier New', monospace; font-size: 14px; padding: 5px 8px; margin: 2px; flex-grow: 1; text-align: center; }
 }
+
+/* Add these to your main.css file */
+
+.ascii-art-container {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+/* Hide boot stage 2 initially */
+#boot-stage-2 {
+    opacity: 0;
+    color: #ff00ff;
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+}
+
+/* Classes for JS to control transitions */
+.stage-fade-out {
+    opacity: 0 !important;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.stage-fade-in {
+    opacity: 1 !important;
+    transition: opacity 1.0s ease-in-out;
+}
+

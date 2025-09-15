@@ -19,7 +19,6 @@ export let currentPath = [];
 
 // --- CORE FUNCTIONS ---
 export function getFullPath() { return currentPath.join('/'); }
-export function getTopLevelDir() { return currentPath.length > 0 ? `${currentPath[0]}/` : '~'; }
 export function updateCurrentPath(newPath) { currentPath = newPath; updatePrompt(); }
 
 function updatePrompt() {
@@ -82,37 +81,33 @@ async function handleCommand() {
 function scrollToBottom() { scrollAnchor.scrollIntoView(); }
 
 // --- INITIALIZATION ---
+function alignBootStatus(element, status) {
+    const targetLength = 35; 
+    const currentText = element.textContent;
+    const dotsNeeded = targetLength - currentText.length;
+    if (dotsNeeded > 0) {
+        element.textContent = currentText + '.'.repeat(dotsNeeded) + ` ${status}`;
+    }
+}
+
 async function initializeFileSystem() {
-    const bootMsg = document.getElementById('filesystem-mount-message');
+    const fsMountMessage = document.getElementById('filesystem-mount-message');
     try {
+        await new Promise(resolve => setTimeout(resolve, 500)); 
         const response = await fetch('./filesystem.json');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         directoryStructure = await response.json();
-        bootMsg.textContent += ' [OK]';
+        alignBootStatus(fsMountMessage, '[OK]');
     } catch (error) {
-        console.error("Fatal Error: Could not load virtual filesystem.", error);
-        bootMsg.textContent += ' [FAILED]';
-        const errorMsg = document.createElement('div');
-        errorMsg.className = 'boot-message';
-        errorMsg.style.color = '#ff0000';
-        errorMsg.textContent = '> ERROR: VFS NOT FOUND. Cannot boot. Check filesystem.json path.';
-        bootMsg.parentNode.insertBefore(errorMsg, bootMsg.nextSibling);
-        return false;
+        alignBootStatus(fsMountMessage, '[FAILED]');
+        console.error("Failed to load filesystem:", error);
+        directoryStructure = { '~': ['ERROR.txt'] };
     }
-    return true;
 }
 
 function initializeTerminal() {
     const bootScreen = document.getElementById('boot-screen');
-    const bootMessages = bootScreen.querySelectorAll('.boot-message, .ascii-art-line');
-
-    // Add a "power-off" effect to the boot text
-    bootMessages.forEach(el => {
-        el.style.transition = 'opacity 0.2s ease-out';
-        el.style.opacity = '0';
-    });
-
-    // After the text fades, hide the boot screen and show the terminal
+    bootScreen.classList.add('stage-fade-out');
     setTimeout(() => {
         bootScreen.style.display = 'none';
         terminal.style.display = 'block';
@@ -122,7 +117,7 @@ function initializeTerminal() {
         }
         input.focus();
         scrollToBottom();
-    }, 300); // Wait for the new power-off effect to finish
+    }, 300);
 
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { handleCommand(); } 
@@ -142,13 +137,38 @@ function initializeTerminal() {
     });
 }
 
-// --- STARTUP ---
+// --- STARTUP SEQUENCE ---
 document.addEventListener('DOMContentLoaded', async () => {
     initializeAppWindows();
-    const fsLoaded = await initializeFileSystem(); 
-    if (fsLoaded) {
-        // Wait for the full boot animation to play out before transitioning
-        setTimeout(initializeTerminal, 8000); 
-    }
+    await initializeFileSystem();
     updatePrompt();
+
+    const stage1 = document.getElementById('boot-stage-1');
+    const stage2 = document.getElementById('boot-stage-2');
+    const daemonStatus = document.getElementById('daemon-status-message');
+    const originalDaemonText = daemonStatus.textContent;
+    
+    // **THE FIX IS HERE: Reinstated the loading animation**
+    let dotCount = 0;
+    const dotInterval = setInterval(() => {
+        dotCount = (dotCount + 1) % 13; // Cycle through 0-12 dots
+        daemonStatus.textContent = originalDaemonText + '.'.repeat(dotCount);
+    }, 200);
+
+    // This is the main timer for the whole boot sequence
+    setTimeout(() => {
+        clearInterval(dotInterval); // Stop the dot animation
+        alignBootStatus(daemonStatus, '[OK]'); // Set the final, aligned status
+        
+        stage1.classList.add('stage-fade-out');
+
+        setTimeout(() => {
+            stage1.style.display = 'none';
+            stage2.classList.add('stage-fade-in');
+
+            setTimeout(initializeTerminal, 2000); 
+
+        }, 400);
+
+    }, 6500);
 });

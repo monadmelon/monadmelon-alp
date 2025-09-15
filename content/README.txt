@@ -11,3 +11,5 @@ net/      - external connections & links
 To run the audio player, you can type 'audplayer' from any directory, or navigate to the 'aud' directory and type './audplayer'.
 
 To run the notes app, you can type 'notes' from any directory.
+
+To invoke the ghost in the machine, just type 'suika'

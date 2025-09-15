@@ -11,26 +11,37 @@ export async function cat(args) {
         return `cat: ${pathArg}: Is a directory`;
     }
 
-    // A simple check for cat at root, which is not supported for files
+    let fetchPath = '';
+    let exists = false;
+
+    // Case 1: At the root ('~')
     if (currentPath.length === 0) {
-        return `cat: ${pathArg}: No such file or directory in root`;
+        exists = (directoryStructure['~'] || []).includes(pathArg);
+        if (exists) {
+            // **THE FIX:** Differentiate between the project's README.md and content files
+            if (pathArg === 'README.md') {
+                fetchPath = `./${pathArg}`; // Fetch from the project root
+            } else {
+                fetchPath = `./content/${pathArg}`; // Fetch from the content folder
+            }
+        }
+    } else {
+        // Case 2: In a subdirectory
+        const topLevelDir = `${currentPath[0]}/`;
+        const allEntries = directoryStructure[topLevelDir] || [];
+        const virtualPath = currentPath.slice(1).join('/') + (currentPath.length > 1 ? '/' : '') + pathArg;
+        
+        exists = allEntries.includes(virtualPath);
+        if (exists) {
+            fetchPath = `./content/${topLevelDir}${virtualPath}`;
+        }
     }
-    
-    // Construct the path relative to the top-level directory
-    // e.g., if currentPath is ['log', 'C'], this becomes 'C/c_info.txt'
-    const topLevelDir = `${currentPath[0]}/`;
-    const pathWithinTopDir = (currentPath.slice(1).join('/') + (currentPath.length > 1 ? '/' : '') + pathArg);
 
-    const entries = directoryStructure[topLevelDir] || [];
-
-    // Check if this exact path exists in our filesystem list
-    if (entries.includes(pathWithinTopDir)) {
+    if (exists) {
         try {
-            // The fetch path is always content + topLevelDir + pathWithinTopDir
-            const fetchPath = `./content/${topLevelDir}${pathWithinTopDir}`;
             const response = await fetch(fetchPath);
             if (!response.ok) {
-                return `cat: error fetching '${pathArg}'`;
+                return `cat: error fetching '${pathArg}': ${response.statusText}`;
             }
             return await response.text();
         } catch (error) {

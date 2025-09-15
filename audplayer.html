@@ -136,8 +136,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // All variables and functions from the previous version remain here.
-            // No changes were made to the JavaScript logic itself.
             const audio = document.getElementById('audio-player');
             const canvas = document.getElementById('visualizer');
             const canvasCtx = canvas.getContext('2d');
@@ -160,7 +158,15 @@
             let audioContext, analyser, source;
             let visualizerEnabled = false;
 
-            function setupAudioContext() { if (audioContext) return; audioContext = new (window.AudioContext || window.webkitAudioContext)(); source = audioContext.createMediaElementSource(audio); analyser = audioContext.createAnalyser(); source.connect(analyser); analyser.connect(audioContext.destination); analyser.fftSize = 256; }
+            function setupAudioContext() {
+                if (audioContext) return;
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                source = audioContext.createMediaElementSource(audio);
+                analyser = audioContext.createAnalyser();
+                source.connect(analyser);
+                analyser.connect(audioContext.destination);
+                analyser.fftSize = 256;
+            }
             function resizeCanvas() { canvas.width = visualizerContainer.clientWidth; canvas.height = visualizerContainer.clientHeight; }
             function drawVisualizer() { requestAnimationFrame(drawVisualizer); if (!visualizerEnabled || !analyser) return; const bufferLength = analyser.frequencyBinCount; const dataArray = new Uint8Array(bufferLength); analyser.getByteFrequencyData(dataArray); canvasCtx.fillStyle = '#001100'; canvasCtx.fillRect(0, 0, canvas.width, canvas.height); const barWidth = (canvas.width / bufferLength) * 1.25; let x = 0; for (let i = 0; i < bufferLength; i++) { const barHeight = dataArray[i] * (canvas.height / 255); canvasCtx.fillStyle = `rgb(0, ${barHeight + 100}, 0)`; canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight); x += barWidth + 1; } }
             function toggleVisualizer() { visualizerEnabled = !visualizerEnabled; if (visualizerEnabled) { logContainer.style.display = 'none'; visualizerContainer.style.display = 'block'; resizeCanvas(); } else { logContainer.style.display = 'block'; visualizerContainer.style.display = 'none'; } }
@@ -177,13 +183,39 @@
             const formatTime = (seconds) => { const minutes = Math.floor(seconds / 60); const secs = Math.floor(seconds % 60); return `${minutes}:${secs < 10 ? '0' : ''}${secs}`; };
             const logToTerminal = (message) => { const logEntry = document.createElement('div'); logEntry.className = 'terminal-line'; logEntry.innerHTML = `<span class="log-message">${message}</span>`; terminalLog.prepend(logEntry); };
             const updatePlayerUI = () => { trackTitleEl.textContent = tracks[player.currentTrack].title; playBtn.style.display = player.playing ? 'none' : 'block'; pauseBtn.style.display = player.playing ? 'block' : 'none'; document.querySelectorAll('.track').forEach((trackEl, index) => { trackEl.classList.toggle('playing', index === player.currentTrack); }); };
-            const selectTrack = (index) => { if (!audioContext) setupAudioContext(); player.currentTrack = index; audio.src = tracks[player.currentTrack].path; audio.load(); audio.play(); logToTerminal(`Playing: ${tracks[player.currentTrack].title}`); };
-            const togglePlay = () => { if (!audio.src) { selectTrack(0); return; } if (audioContext.state === 'suspended') audioContext.resume(); audio.paused ? audio.play() : audio.pause(); };
+            
+            // **UPDATED** to ensure context is ready
+            const selectTrack = (index) => { 
+                player.currentTrack = index;
+                audio.src = tracks[player.currentTrack].path;
+                audio.load();
+                audio.play();
+                logToTerminal(`Playing: ${tracks[player.currentTrack].title}`);
+            };
+
+            // **UPDATED** to be the main point of audio activation
+            const togglePlay = () => {
+                // First, ensure the audio context is created and resumed by a direct user action
+                if (!audioContext) {
+                    setupAudioContext();
+                }
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+
+                // Now, handle the playback logic
+                if (!audio.src) {
+                    selectTrack(0);
+                    return;
+                }
+                audio.paused ? audio.play() : audio.pause();
+            };
+
             const nextTrack = () => selectTrack((player.currentTrack + 1) % tracks.length);
             const prevTrack = () => selectTrack((player.currentTrack - 1 + tracks.length) % tracks.length);
             const changeVolume = () => audio.volume = volumeSlider.value / 100;
             const seek = (e) => { const width = progressContainer.clientWidth; const clickX = e.offsetX; audio.currentTime = (clickX / width) * audio.duration; };
-            const buildPlaylist = () => { playlistContainer.innerHTML = ''; tracks.forEach((track, index) => { const trackEl = document.createElement('div'); trackEl.className = 'track'; trackEl.textContent = `${index + 1}. ${track.title}`; trackEl.addEventListener('click', () => selectTrack(index)); playlistContainer.appendChild(trackEl); }); };
+            const buildPlaylist = () => { playlistContainer.innerHTML = ''; tracks.forEach((track, index) => { const trackEl = document.createElement('div'); trackEl.className = 'track'; trackEl.textContent = `${index + 1}. ${track.title}`; trackEl.addEventListener('click', () => { if (!audioContext) { setupAudioContext(); } selectTrack(index); }); playlistContainer.appendChild(trackEl); }); };
 
             vizToggleBtn.addEventListener('click', toggleVisualizer);
             mobileVizToggleBtn.addEventListener('click', toggleVisualizer);

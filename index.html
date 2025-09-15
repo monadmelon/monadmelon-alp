@@ -12,24 +12,31 @@
 <body>
     <div id="boot-screen">
         <div class="scanlines"></div>
-        <div class="boot-message" style="animation-delay: 0.5s">> INITIATING MONADMELON BOOT SEQUENCE</div>
-        <div class="boot-message" style="animation-delay: 1.2s">> LOADING KERNEL .................... [OK]</div>
-        <div id="filesystem-mount-message" class="boot-message" style="animation-delay: 2.0s">> MOUNTING VIRTUAL FILESYSTEM ....... </div>
-        <div class="boot-message" style="animation-delay: 2.8s">> INITIALIZING AUDIO SUBSYSTEM ....... [OK]</div>
-        <div class="boot-message" style="animation-delay: 3.6s">> STARTING SUIKA DAEMON ............ </div>
-        <div class="ascii-art-line" style="animation-delay: 4.0s">███████╗██╗   ██╗██╗██╗  ██╗ █████╗ </div>
-        <div class="ascii-art-line" style="animation-delay: 4.3s">██╔════╝██║   ██║██║██║ ██╔╝██╔══██╗</div>
-        <div class="ascii-art-line" style="animation-delay: 4.6s">███████╗██║   ██║██║█████╔╝ ███████║</div>
-        <div class="ascii-art-line" style="animation-delay: 4.9s">╚════██║██║   ██║██║██╔═██╗ ██╔══██║</div>
-        <div class="ascii-art-line" style="animation-delay: 5.2s">███████║╚██████╔╝██║██║  ██╗██║  ██║</div>
-        <div class="ascii-art-line" style="animation-delay: 5.5s">╚══════╝ ╚═════╝ ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝</div>
-        
-        <div class="ascii-art-line" style="animation-delay: 6.0s; color: #ff00ff;">  /\_/\  </div>
-        <div class="ascii-art-line" style="animation-delay: 6.2s; color: #ff00ff;"> ( o.o ) </div>
-        <div class="ascii-art-line" style="animation-delay: 6.4s; color: #ff00ff;">  > ^ <  </div>
 
-        <div class="boot-message" style="animation-delay: 7.0s">> SYSTEM READY</div>
-        <div class="boot-message" style="animation-delay: 7.5s">> WELCOME TO MONADMELON</div>
+        <div id="boot-stage-1">
+            <div class="boot-message" style="animation-delay: 0.5s">> INITIATING MONADMELON BOOT SEQUENCE</div>
+            <div class="boot-message" style="animation-delay: 1.0s">> LOADING KERNEL................... [OK]</div>
+            <div id="filesystem-mount-message" class="boot-message" style="animation-delay: 1.5s">> MOUNTING VIRTUAL FILESYSTEM</div>
+            <div class="boot-message" style="animation-delay: 2.0s">> INITIALIZING AUDIO SUBSYSTEM..... [OK]</div>
+             <div id="daemon-status-message" class="boot-message" style="animation-delay: 2.5s">> STARTING SUIKA DAEMON</div>
+            
+            <div class="ascii-art-container">
+                <div class="ascii-art-line" style="animation-delay: 3.0s">███████╗██╗   ██╗██╗██╗  ██╗ █████╗ </div>
+                <div class="ascii-art-line" style="animation-delay: 3.1s">██╔════╝██║   ██║██║██║ ██╔╝██╔══██╗</div>
+                <div class="ascii-art-line" style="animation-delay: 3.2s">███████╗██║   ██║██║█████╔╝ ███████║</div>
+                <div class="ascii-art-line" style="animation-delay: 3.3s">╚════██║██║   ██║██║██╔═██╗ ██╔══██║</div>
+                <div class="ascii-art-line" style="animation-delay: 3.4s">███████║╚██████╔╝██║██║  ██╗██║  ██║</div>
+                <div class="ascii-art-line" style="animation-delay: 3.5s">╚══════╝ ╚═════╝ ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝</div>
+            </div>
+        </div>
+
+        <div id="boot-stage-2">
+            <div class="boot-message">  /\_/\  </div>
+            <div class="boot-message"> ( o.o ) </div>
+            <div class="boot-message">  > ^ <  </div>
+            <br>
+            <div class="boot-message">monadmelon-alpha_1</div>
+        </div>
     </div>
 
     <div id="terminal">
