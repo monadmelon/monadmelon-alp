@@ -35,9 +35,8 @@ A retro, terminal-style personal website and portfolio built with vanilla JavaSc
 
 ## Tech Stack 🛠️
 
-  * **Frontend:** HTML5, CSS3, Vanilla JavaScript (ES6 Modules)
-  * **Backend:** Python, Flask, Flask-CORS
-  * **Development:** Python's built-in HTTP server for frontend, Git for version control.
+  * **Frontend:** HTML5, CSS3, Vanilla JavaScript
+  * **Backend:** Flask
 
 -----
 
